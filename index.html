@@ -4,7 +4,7 @@
     <meta charset="utf-8" />
     <meta
       name="viewport"
-      content="width=device-width,initial-scale=1,viewport-fit=cover"
+      content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover"
     />
     <meta name="theme-color" content="#2f8cff" />
     <title>Bog'cha</title>
@@ -22,6 +22,11 @@
         box-sizing: border-box;
         margin: 0;
         -webkit-tap-highlight-color: transparent;
+        touch-action: manipulation;
+      }
+      html {
+        -webkit-text-size-adjust: 100%;
+        text-size-adjust: 100%;
       }
       body {
         font:
@@ -30,6 +35,17 @@
         background: var(--bl);
         color: var(--t);
         padding-bottom: 90px;
+        overflow-x: hidden;
+      }
+      body.lock {
+        overflow: hidden;
+      }
+      button,
+      .row,
+      .chip {
+        user-select: none;
+        -webkit-user-select: none;
+        cursor: pointer;
       }
       #app {
         max-width: 520px;
@@ -115,8 +131,8 @@
         margin-top: 2px;
       }
       .av {
-        width: 42px;
-        height: 42px;
+        width: 46px;
+        height: 46px;
         border-radius: 50%;
         background: var(--bl);
         color: var(--b);
@@ -124,20 +140,27 @@
         place-items: center;
         font-weight: 700;
         flex: none;
+        overflow: hidden;
+        position: relative;
       }
       .av img {
+        position: absolute;
+        inset: 0;
         width: 100%;
         height: 100%;
         object-fit: cover;
-        border-radius: 50%;
+        object-position: center top;
+        display: block;
       }
       .profile-photo {
         display: block;
-        width: 112px;
-        height: 112px;
+        width: 130px;
+        height: 130px;
         object-fit: cover;
-        border-radius: 20px;
+        object-position: center top;
+        border-radius: 50%;
         margin: 10px auto;
+        background: var(--bl);
       }
       input,
       select,
@@ -147,8 +170,15 @@
         border: 1.5px solid #d5e4f7;
         border-radius: 14px;
         font: inherit;
+        font-size: 16px;
         background: #fff;
         margin: 4px 0 10px;
+        color: var(--t);
+        -webkit-appearance: none;
+        appearance: none;
+      }
+      input[type="file"] {
+        padding: 10px;
       }
       .bar {
         display: flex;
@@ -181,6 +211,9 @@
       }
       .btn.red {
         background: var(--r);
+      }
+      .btn:disabled {
+        opacity: 0.6;
       }
       .pill {
         font-size: 12px;
@@ -265,8 +298,9 @@
         max-width: 520px;
         max-height: 90vh;
         overflow: auto;
+        -webkit-overflow-scrolling: touch;
         border-radius: 24px 24px 0 0;
-        padding: 20px;
+        padding: 20px 20px calc(20px + env(safe-area-inset-bottom));
         position: relative;
       }
       .sheet label {
@@ -277,6 +311,9 @@
       }
       .sheet p {
         margin: 6px 0;
+      }
+      .sheet .row {
+        box-shadow: 0 0 0 1px #e3eefb;
       }
       .x {
         position: absolute;
@@ -378,6 +415,15 @@
         border-radius: 4px 4px 0 0;
         min-height: 2px;
       }
+      .dt {
+        display: inline-block;
+        background: var(--bl);
+        color: var(--b);
+        border-radius: 8px;
+        padding: 1px 7px;
+        font-size: 12px;
+        font-weight: 600;
+      }
       @media print {
         nav,
         .noprint,
@@ -397,24 +443,24 @@
     <div id="toast"></div>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
     <script>
-      /* ====== SOZLAMA: faqat shu ikki qatorni o'zgartiring ====== */
+      /* ====== SOZLAMA ====== */
       const SB_URL = "https://csbpoxykhgfkzgxabnty.supabase.co";
       const SB_KEY = "sb_publishable_9FJvqjmyJS8N2tbuoLBdCg_F103ygXX";
-      /* ========================================================= */
+      /* ===================== */
       const sb = supabase.createClient(SB_URL, SB_KEY);
-      const $ = (s) => document.querySelector(s),
-        E = (s) =>
-          String(s ?? "").replace(
-            /[&<>"']/g,
-            (c) =>
-              ({
-                "&": "&amp;",
-                "<": "&lt;",
-                ">": "&gt;",
-                '"': "&quot;",
-                "'": "&#39;",
-              })[c],
-          );
+      const $ = (s) => document.querySelector(s);
+      const E = (s) =>
+        String(s ?? "").replace(
+          /[&<>"']/g,
+          (c) =>
+            ({
+              "&": "&amp;",
+              "<": "&lt;",
+              ">": "&gt;",
+              '"': "&quot;",
+              "'": "&#39;",
+            })[c],
+        );
       const M = (n) => Number(n || 0).toLocaleString("ru-RU") + " so'm";
       const D = () =>
           new Date().toLocaleDateString("sv-SE", { timeZone: "Asia/Tashkent" }),
@@ -423,12 +469,14 @@
         const m = String(s || "").match(/^(\d{4})-(\d{2})-(\d{2})/);
         return m ? m[3] + "." + m[2] + "." + m[1] : s || "—";
       };
+      const DT = (s) => '<span class="dt">' + FD(s) + "</span>";
       const PHOTO_BUCKET = "bolalar-rasmlari";
       const nxt = (m) => {
         const d = new Date(m + "-01T00:00:00Z");
         d.setUTCMonth(d.getUTCMonth() + 1);
         return d.toISOString().slice(0, 10);
       };
+      const USUL = { naqd: "Naqd", karta: "Karta", otkazma: "O‘tkazma" };
       let me,
         tab = "bosh",
         sub = "",
@@ -460,15 +508,105 @@
           h +
           "</div>";
         $("#modal").style.display = "flex";
+        document.body.classList.add("lock");
       };
       const shut = () => {
         $("#modal").style.display = "none";
+        document.body.classList.remove("lock");
       };
       const back =
         '<button class="back noprint" onclick="sub=\'\';render()">← Orqaga</button>';
 
+      /* ---------- Rasm yordamchilari ---------- */
+      const shrink = (f) =>
+        new Promise((res) => {
+          const i = new Image(),
+            u = URL.createObjectURL(f);
+          i.onload = () => {
+            const k = Math.min(1, 900 / Math.max(i.width, i.height)),
+              c = document.createElement("canvas");
+            c.width = Math.round(i.width * k);
+            c.height = Math.round(i.height * k);
+            c.getContext("2d").drawImage(i, 0, 0, c.width, c.height);
+            URL.revokeObjectURL(u);
+            c.toBlob((b) => res(b || f), "image/jpeg", 0.85);
+          };
+          i.onerror = () => res(f);
+          i.src = u;
+        });
+      async function signedPhoto(path) {
+        if (!path) return "";
+        const { data, error } = await sb.storage
+          .from(PHOTO_BUCKET)
+          .createSignedUrl(path, 3600);
+        return error ? "" : data?.signedUrl || "";
+      }
+      async function signedMany(list) {
+        const paths = list.map((b) => b.rasm_path).filter(Boolean);
+        if (!paths.length) return;
+        const { data } = await sb.storage
+          .from(PHOTO_BUCKET)
+          .createSignedUrls(paths, 3600);
+        const mp = {};
+        (data || []).forEach((x) => x.signedUrl && (mp[x.path] = x.signedUrl));
+        list.forEach((b) => (b._photoUrl = mp[b.rasm_path] || ""));
+      }
+      function previewPhoto(input) {
+        const file = input.files?.[0];
+        if (!file) return;
+        if (!["image/jpeg", "image/png", "image/webp"].includes(file.type)) {
+          input.value = "";
+          return toast("JPG, PNG yoki WebP rasm tanlang");
+        }
+        if (file.size > 10 * 1024 * 1024) {
+          input.value = "";
+          return toast("Rasm hajmi 10 MB dan oshmasin");
+        }
+        const reader = new FileReader();
+        reader.onload = () => {
+          const img = $("#photo-preview");
+          if (img) {
+            img.src = reader.result;
+            img.style.display = "block";
+          }
+        };
+        reader.readAsDataURL(file);
+      }
+      async function saveChildPhoto(id, file, oldPath) {
+        if (!file) return oldPath || null;
+        const blob = await shrink(file);
+        const path =
+          String(id) +
+          "/" +
+          Date.now().toString(36) +
+          "-" +
+          Math.random().toString(36).slice(2) +
+          ".jpg";
+        const bucket = sb.storage.from(PHOTO_BUCKET);
+        const { error: ue } = await bucket.upload(path, blob, {
+          contentType: "image/jpeg",
+          cacheControl: "3600",
+          upsert: false,
+        });
+        if (ue) {
+          toast("Rasm saqlanmadi. Supabase foto SQL sozlamasini bajaring.");
+          throw ue;
+        }
+        const { error: pe } = await sb
+          .from("bolalar")
+          .update({ rasm_path: path })
+          .eq("id", id);
+        if (pe) {
+          await bucket.remove([path]);
+          toast("rasm_path ustuni yo‘q. Supabase SQL sozlamasini bajaring.");
+          throw pe;
+        }
+        if (oldPath && oldPath !== path) await bucket.remove([oldPath]);
+        return path;
+      }
+
       /* ---------- Umumiy forma ---------- */
-      function form(title, fields, v, save, del) {
+      function form(title, fields, v, save, del, ex) {
         window._save = save;
         window._del = del;
         window._f = fields;
@@ -476,6 +614,7 @@
           "<h3>" +
             title +
             "</h3>" +
+            (ex || "") +
             fields
               .map((f) => {
                 const val = v?.[f.k] ?? f.d ?? "",
@@ -526,7 +665,7 @@
                 return "<label>" + f.l + (f.r ? " *" : "") + i + "</label>";
               })
               .join("") +
-            '<button class="btn" onclick="sendForm()">Saqlash</button>' +
+            '<button class="btn" id="sv" onclick="sendForm()">Saqlash</button>' +
             (del
               ? '<button class="btn red" onclick="delForm()">O‘chirish</button>'
               : ""),
@@ -541,83 +680,17 @@
           if (f.r && o[f.k] === null)
             return toast("“" + f.l + "” to‘ldirilishi shart");
         }
+        const btn = $("#sv");
+        btn.disabled = true;
         try {
-          const photoField = window._f.find((f) => f.t === "file");
-          const photo = photoField
-            ? $("#f_" + photoField.k).files?.[0] || null
-            : null;
+          const pf = window._f.find((f) => f.t === "file");
+          const photo = pf ? $("#f_" + pf.k).files?.[0] || null : null;
           await window._save(o, photo);
           shut();
           render();
-        } catch (e) {}
-      }
-      function previewPhoto(input) {
-        const file = input.files?.[0];
-        if (!file) return;
-        if (!["image/jpeg", "image/png", "image/webp"].includes(file.type)) {
-          input.value = "";
-          return toast("JPG, PNG yoki WebP rasm tanlang");
+        } catch (e) {
+          btn.disabled = false;
         }
-        if (file.size > 5 * 1024 * 1024) {
-          input.value = "";
-          return toast("Rasm hajmi 5 MB dan oshmasin");
-        }
-        const reader = new FileReader();
-        reader.onload = () => {
-          const img = $("#photo-preview");
-          if (img) {
-            img.src = reader.result;
-            img.style.display = "block";
-          }
-        };
-        reader.readAsDataURL(file);
-      }
-      async function signedPhoto(path) {
-        if (!path) return "";
-        const { data, error } = await sb.storage
-          .from(PHOTO_BUCKET)
-          .createSignedUrl(path, 3600);
-        return error ? "" : data?.signedUrl || "";
-      }
-      async function saveChildPhoto(id, file, oldPath) {
-        if (!file) return oldPath || null;
-        if (!["image/jpeg", "image/png", "image/webp"].includes(file.type))
-          throw new Error("JPG, PNG yoki WebP rasm tanlang");
-        if (file.size > 5 * 1024 * 1024)
-          throw new Error("Rasm hajmi 5 MB dan oshmasin");
-        const ext =
-          file.type === "image/jpeg" ? "jpg" : file.type.split("/")[1];
-        const path =
-          String(id) +
-          "/" +
-          Date.now().toString(36) +
-          "-" +
-          Math.random().toString(36).slice(2) +
-          "." +
-          ext;
-        const bucket = sb.storage.from(PHOTO_BUCKET);
-        const { error: uploadError } = await bucket.upload(path, file, {
-          contentType: file.type,
-          cacheControl: "3600",
-          upsert: false,
-        });
-        if (uploadError) {
-          toast("Rasm saqlanmadi. Foto saqlash sozlamalarini tekshiring.");
-          throw uploadError;
-        }
-        const { error: updateError } = await sb
-          .from("bolalar")
-          .update({ rasm_path: path })
-          .eq("id", id);
-        if (updateError) {
-          await bucket.remove([path]);
-          toast(
-            "Rasm ustuni sozlanmagan. Supabase foto SQL sozlamasini bajaring.",
-          );
-          throw updateError;
-        }
-        if (oldPath && oldPath !== path) await bucket.remove([oldPath]);
-        return path;
       }
       async function delForm() {
         if (!confirm("Rostdan o‘chirasizmi?")) return;
@@ -645,9 +718,6 @@
         start();
       }
       async function start() {
-        if (SB_KEY.startsWith("SHU_"))
-          return ($("#app").innerHTML =
-            '<p class="c">index.html ichida SB_KEY ni o‘zingizning kalitingizga almashtiring.</p>');
         const {
           data: { session },
         } = await sb.auth.getSession();
@@ -763,8 +833,8 @@
         return (
           "<h2>Salom, " +
           E(me.ism || "") +
-          ' 👋</h2><p class="mut">' +
-          D() +
+          ' 👋</h2><p class="mut">Bugun: ' +
+          FD(D()) +
           '</p><div class="grid">' +
           c("Jami bolalar", s.jami_bolalar) +
           c("Bugun kelgan", s.bugun_kelgan, "ok") +
@@ -809,11 +879,7 @@
             .eq("faol", true)
             .order("familiya"),
         );
-        await Promise.all(
-          window._b.map(async (b) => {
-            b._photoUrl = await signedPhoto(b.rasm_path);
-          }),
-        );
+        await signedMany(window._b);
         return (
           '<div class="bar"><input placeholder="🔍 Qidirish…" value="' +
           E(sq) +
@@ -826,6 +892,10 @@
           "</div>"
         );
       }
+      const avatar = (b) =>
+        b._photoUrl
+          ? '<img src="' + E(b._photoUrl) + '" alt="Bola rasmi">'
+          : E((b.ism || "?")[0]);
       const bList = () => {
         const k = sq.toLowerCase(),
           r = window._b.filter((b) =>
@@ -840,15 +910,15 @@
                   '<div class="row" onclick="bInfo(\'' +
                   b.id +
                   '\')"><div class="av">' +
-                  (b._photoUrl
-                    ? '<img src="' + E(b._photoUrl) + '" alt="Bola rasmi">'
-                    : E((b.ism || "?")[0])) +
+                  avatar(b) +
                   "</div><div><b>" +
                   E(b.familiya + " " + b.ism) +
                   "</b><small>" +
                   E(b.guruhlar?.nomi || "Guruhsiz") +
                   " · " +
                   M(b.oylik_tolov) +
+                  "</small><small>Kelgan: " +
+                  FD(b.kelgan_sana) +
                   "</small></div></div>",
               )
               .join("")
@@ -864,7 +934,9 @@
             ? '<img class="profile-photo" src="' +
               E(b._photoUrl) +
               '" alt="Bola rasmi">'
-            : "") +
+            : '<div class="profile-photo av" style="font-size:44px;width:130px;height:130px">' +
+              E((b.ism || "?")[0]) +
+              "</div>") +
             "<h3>" +
             E(b.familiya + " " + b.ism) +
             "</h3><p>👪 " +
@@ -873,11 +945,15 @@
             E(b.telefon || "—") +
             "</p><p>🏠 " +
             E(b.manzil || "—") +
-            "</p><p>🎂 " +
+            "</p><p>🎂 Tug‘ilgan: " +
             FD(b.tugilgan_sana) +
             "</p><p>📅 Kelgan: " +
             FD(b.kelgan_sana) +
-            "</p><p>👥 " +
+            "</p>" +
+            (b.ketgan_sana
+              ? "<p>🚪 Ketgan: " + FD(b.ketgan_sana) + "</p>"
+              : "") +
+            "<p>👥 " +
             E(b.guruhlar?.nomi || "Guruhsiz") +
             "</p><p>💰 " +
             M(b.oylik_tolov) +
@@ -911,12 +987,12 @@
                 (x) =>
                   '<div class="row"><div><b>' +
                   M(x.summa) +
-                  "</b><small>" +
-                  FD(x.sana) +
-                  " · " +
+                  "</b><small>To‘lov sanasi: " +
+                  DT(x.sana) +
+                  "</small><small>" +
                   (x.oylik_hisoblar?.oy || "").slice(0, 7) +
                   " oyi uchun · " +
-                  E(x.usul) +
+                  E(USUL[x.usul] || x.usul) +
                   "</small></div></div>",
               )
               .join("") || '<p class="mut c">To‘lov yo‘q</p>'),
@@ -929,6 +1005,7 @@
           : { kelgan_sana: D() };
         window._photoPreview = await signedPhoto(b?.rasm_path);
         const F = [
+          { k: "rasm_path", l: "Bola rasmi", t: "file" },
           { k: "ism", l: "Ism", r: 1 },
           { k: "familiya", l: "Familiya", r: 1 },
           { k: "tugilgan_sana", l: "Tug‘ilgan sana", t: "date" },
@@ -953,7 +1030,6 @@
             o: [["", "Guruhsiz"], ...g.map((x) => [x.id, x.nomi])],
           },
           { k: "oylik_tolov", l: "Oylik to‘lov (so‘m)", t: "number", r: 1 },
-          { k: "rasm_path", l: "Bola rasmi (5 MB gacha)", t: "file" },
           { k: "izoh", l: "Izoh", t: "area" },
         ];
         if (id)
@@ -967,17 +1043,13 @@
           F,
           b,
           async (o, photo) => {
-            let savedId = id;
-            if (savedId) {
-              await q(sb.from("bolalar").update(o).eq("id", savedId));
-            } else {
-              const created = await q(
-                sb.from("bolalar").insert(o).select("id").single(),
-              );
-              savedId = created.id;
-            }
-            if (photo)
-              await saveChildPhoto(savedId, photo, b?.rasm_path || null);
+            let sid = id;
+            if (sid) await q(sb.from("bolalar").update(o).eq("id", sid));
+            else
+              sid = (
+                await q(sb.from("bolalar").insert(o).select("id").single())
+              ).id;
+            if (photo) await saveChildPhoto(sid, photo, b?.rasm_path || null);
           },
           id && me.rol === "admin"
             ? () => q(sb.from("bolalar").delete().eq("id", id))
@@ -1002,27 +1074,21 @@
                   .eq("oy", tm + "-01")
                   .order("created_at"),
               );
-        const invoiceIds = r.map((x) => x.hisob_id || x.id).filter(Boolean);
-        const payments = invoiceIds.length
+        const ids = r.map((x) => x.hisob_id || x.id).filter(Boolean);
+        const pays = ids.length
           ? await q(
               sb
                 .from("tolovlar")
-                .select("hisob_id,sana")
-                .in("hisob_id", invoiceIds)
+                .select("id,hisob_id,sana,summa,usul")
+                .in("hisob_id", ids)
                 .order("sana", { ascending: false }),
             )
           : [];
-        const lastPayment = {};
-        payments.forEach((p) => {
-          if (
-            p.sana &&
-            (!lastPayment[p.hisob_id] || p.sana > lastPayment[p.hisob_id])
-          )
-            lastPayment[p.hisob_id] = p.sana;
-        });
+        const pm = {};
+        pays.forEach((p) => (pm[p.hisob_id] = pm[p.hisob_id] || []).push(p));
         window._h = r.map((x) => ({
           ...x,
-          _lastPayment: lastPayment[x.hisob_id || x.id] || null,
+          _pays: pm[x.hisob_id || x.id] || [],
         }));
         const nm = (x) =>
             x.bolalar
@@ -1044,7 +1110,7 @@
               tm +
               '" onchange="tm=this.value||tm;render()"><button class="btn sm" onclick="mk()">Hisob yaratish</button></div>'
             : "") +
-          (r
+          (window._h
             .map(
               (x) =>
                 '<div class="row" onclick="pay(\'' +
@@ -1054,16 +1120,27 @@
                 "</b><small>" +
                 x.oy.slice(0, 7) +
                 " · " +
-                (x._lastPayment
-                  ? "Oxirgi to‘lov: " + FD(x._lastPayment) + " · "
-                  : "") +
                 M(x.tolangan) +
                 " / " +
                 M(x.summa) +
-                (x.kechikkan_kun > 0
-                  ? " · " + x.kechikkan_kun + " kun kechikkan"
+                "</small>" +
+                (x.muddat
+                  ? "<small>Muddat: " +
+                    FD(x.muddat) +
+                    (x.kechikkan_kun > 0
+                      ? " · " + x.kechikkan_kun + " kun kechikkan"
+                      : "") +
+                    "</small>"
                   : "") +
-                '</small></div><span class="pill ' +
+                (x._pays.length
+                  ? "<small>Oxirgi to‘lov: " +
+                    DT(x._pays[0].sana) +
+                    (x._pays.length > 1
+                      ? " · jami " + x._pays.length + " marta"
+                      : "") +
+                    "</small>"
+                  : "<small>Hali to‘lov qilinmagan</small>") +
+                '</div><span class="pill ' +
                 x.holat +
                 '">' +
                 T[x.holat] +
@@ -1086,11 +1163,26 @@
       }
       function pay(id) {
         const x = window._h.find((y) => (y.hisob_id || y.id) === id);
+        const ex = x._pays.length
+          ? '<p class="mut">Oldingi to‘lovlar:</p>' +
+            x._pays
+              .map(
+                (p) =>
+                  '<div class="row"><div><b>' +
+                  M(p.summa) +
+                  "</b><small>" +
+                  DT(p.sana) +
+                  " · " +
+                  E(USUL[p.usul] || p.usul) +
+                  "</small></div></div>",
+              )
+              .join("")
+          : "";
         form(
           "To‘lov qabul qilish",
           [
             { k: "summa", l: "Summa (so‘m)", t: "number", r: 1, d: x.qarz },
-            { k: "sana", l: "Sana", t: "date", d: D(), r: 1 },
+            { k: "sana", l: "To‘lov sanasi", t: "date", d: D(), r: 1 },
             {
               k: "usul",
               l: "Usul",
@@ -1104,6 +1196,8 @@
           ],
           {},
           (o) => q(sb.from("tolovlar").insert({ ...o, hisob_id: id })),
+          null,
+          ex,
         );
       }
 
@@ -1132,24 +1226,38 @@
             .order("sana", { ascending: false })
             .order("created_at", { ascending: false }),
         );
-        const paymentIds = [
-          ...new Set(r.map((x) => x.tolov_id).filter(Boolean)),
-        ];
-        const linkedPayments = paymentIds.length
-          ? await q(
-              sb
-                .from("tolovlar")
-                .select("id,sana,bolalar(ism,familiya)")
-                .in("id", paymentIds),
-            )
-          : [];
-        const paymentById = Object.fromEntries(
-          linkedPayments.map((p) => [p.id, p]),
-        );
-        window._k = r.map((x) => ({
-          ...x,
-          _payment: x.tolov_id ? paymentById[x.tolov_id] || null : null,
-        }));
+        const ids = [...new Set(r.map((x) => x.tolov_id).filter(Boolean))];
+        const [monthPays, linked] = await Promise.all([
+          q(
+            sb
+              .from("tolovlar")
+              .select("id,sana,summa,bolalar(ism,familiya)")
+              .gte("sana", mm + "-01")
+              .lt("sana", nxt(mm)),
+          ),
+          ids.length
+            ? q(
+                sb
+                  .from("tolovlar")
+                  .select("id,sana,summa,bolalar(ism,familiya)")
+                  .in("id", ids),
+              )
+            : [],
+        ]);
+        const byId = {};
+        [...monthPays, ...linked].forEach((p) => (byId[p.id] = p));
+        const used = new Set(ids);
+        const free = monthPays.filter((p) => !used.has(p.id));
+        window._k = r.map((x) => {
+          let p = x.tolov_id ? byId[x.tolov_id] : null;
+          if (!p && x.tur === "kirim" && x.kategoriya === "oylik_tolov") {
+            const i = free.findIndex(
+              (f) => f.sana === x.sana && Number(f.summa) === Number(x.summa),
+            );
+            if (i >= 0) p = free.splice(i, 1)[0];
+          }
+          return { ...x, _payment: p || null };
+        });
         const sm = (t) =>
             r.filter((x) => x.tur === t).reduce((a, x) => a + +x.summa, 0),
           ki = sm("kirim"),
@@ -1166,32 +1274,31 @@
           '<div class="card wide"><span>Sof foyda</span><b>' +
           M(ki - ch) +
           '</b></div><div class="bar"><button class="btn sm" onclick="kc(\'kirim\')">+ Kirim</button><button class="btn sm red" onclick="kc(\'chiqim\')">− Chiqim</button></div>' +
-          (r
-            .map(
-              (x) =>
+          (window._k
+            .map((x) => {
+              const b = x._payment?.bolalar;
+              return (
                 '<div class="row" onclick="kd(\'' +
                 x.id +
                 "')\"><div><b>" +
-                lb[x.kategoriya] +
+                (b ? "👶 " + E(b.familiya + " " + b.ism) : lb[x.kategoriya]) +
                 "</b><small>" +
-                FD(x.sana) +
-                (x._payment?.bolalar
-                  ? " · Bola: " +
-                    E(
-                      x._payment.bolalar.familiya +
-                        " " +
-                        x._payment.bolalar.ism,
-                    ) +
-                    (x._payment.sana ? " · To‘lov: " + FD(x._payment.sana) : "")
+                (b ? lb[x.kategoriya] + " · " : "") +
+                "Sana: " +
+                DT(x.sana) +
+                "</small>" +
+                (x._payment?.sana
+                  ? "<small>To‘lov sanasi: " + DT(x._payment.sana) + "</small>"
                   : "") +
-                (x.izoh ? " · " + E(x.izoh) : "") +
-                '</small></div><b class="' +
+                (x.izoh ? "<small>" + E(x.izoh) + "</small>" : "") +
+                '</div><b class="' +
                 (x.tur === "kirim" ? "gr" : "rd") +
                 '">' +
                 (x.tur === "kirim" ? "+" : "−") +
                 M(x.summa) +
-                "</b></div>",
-            )
+                "</b></div>"
+              );
+            })
             .join("") || '<p class="mut c">Operatsiya yo‘q</p>')
         );
       }
@@ -1250,12 +1357,13 @@
           q(
             sb
               .from("bolalar")
-              .select("id,ism,familiya")
+              .select("id,ism,familiya,rasm_path")
               .eq("faol", true)
               .order("familiya"),
           ),
           q(sb.from("davomat").select("bola_id,holat").eq("sana", dd)),
         ]);
+        await signedMany(b);
         const mp = Object.fromEntries(r.map((x) => [x.bola_id, x.holat])),
           H = [
             ["keldi", "Keldi"],
@@ -1265,15 +1373,19 @@
           ];
         return (
           back +
-          '<h2>Davomat</h2><div class="bar"><input type="date" value="' +
+          '<h2>Davomat</h2><p class="mut">Sana: ' +
+          FD(dd) +
+          '</p><div class="bar"><input type="date" value="' +
           dd +
           '" onchange="dd=this.value||dd;render()"></div>' +
           b
             .map(
               (x) =>
-                '<div class="card"><b>' +
+                '<div class="card"><div style="display:flex;align-items:center;gap:10px"><div class="av">' +
+                avatar(x) +
+                "</div><b>" +
                 E(x.familiya + " " + x.ism) +
-                '</b><div class="chips">' +
+                '</b></div><div class="chips">' +
                 H.map(
                   (h) =>
                     '<button class="chip ' +
@@ -1335,7 +1447,7 @@
         const b = await q(
           sb
             .from("bolalar")
-            .select("familiya,ism")
+            .select("familiya,ism,kelgan_sana")
             .eq("guruh_id", id)
             .eq("faol", true)
             .order("familiya"),
@@ -1349,7 +1461,13 @@
             (b
               .map(
                 (x, i) =>
-                  "<p>" + (i + 1) + ". " + E(x.familiya + " " + x.ism) + "</p>",
+                  "<p>" +
+                  (i + 1) +
+                  ". " +
+                  E(x.familiya + " " + x.ism) +
+                  ' <span class="mut">(' +
+                  FD(x.kelgan_sana) +
+                  ")</span></p>",
               )
               .join("") || '<p class="mut">Bolalar yo‘q</p>') +
             '<p class="mut">Bolani boshqa guruhga o‘tkazish: Bolalar → bolani tanlang → Tahrirlash → Guruh.</p><button class="btn light" onclick="gForm(\'' +
@@ -1414,7 +1532,11 @@
           '<div class="row"><b>' + l + "</b><span>" + v + "</span></div>";
         return (
           back +
-          '<h2>Hisobotlar</h2><div class="bar"><input type="month" value="' +
+          '<h2>Hisobotlar</h2><p class="mut">Davr: ' +
+          FD(a) +
+          " — " +
+          FD(new Date(new Date(z).getTime() - 864e5).toISOString()) +
+          '</p><div class="bar"><input type="month" value="' +
           hm +
           '" onchange="hm=this.value||hm;render()"></div>' +
           '<div class="bar noprint"><button class="btn sm" onclick="print()">PDF</button><button class="btn sm light" onclick="csv(\'qarz\')">Excel: qarzdorlar</button><button class="btn sm light" onclick="csv(\'tolov\')">Excel: to‘lovlar</button></div>' +
@@ -1442,6 +1564,20 @@
               " / " +
               (t.tolanmagan_soni || 0),
           ) +
+          "<h3>Shu oydagi to‘lovlar (" +
+          ks.length +
+          ")</h3>" +
+          (ks
+            .map((x) =>
+              R(
+                E(x.bolalar.familiya + " " + x.bolalar.ism) +
+                  " <small>" +
+                  FD(x.sana) +
+                  "</small>",
+                M(x.summa),
+              ),
+            )
+            .join("") || '<p class="mut">To‘lov yo‘q</p>') +
           "<h3>Kirim-chiqim</h3>" +
           R("Kirim", M(c.kirim)) +
           R("Chiqim", M(c.chiqim)) +
@@ -1462,6 +1598,7 @@
                 E(x.familiya + " " + x.ism) +
                   " <small>" +
                   x.oy.slice(0, 7) +
+                  (x.muddat ? " · muddat " + FD(x.muddat) : "") +
                   "</small>",
                 M(x.qarz),
               ),
@@ -1491,15 +1628,15 @@
                   x.summa,
                   x.tolangan,
                   x.qarz,
-                  x.muddat,
+                  FD(x.muddat),
                 ]),
               )
             : [["Sana", "Bola", "Summa", "Usul"]].concat(
                 ks.map((x) => [
-                  x.sana,
+                  FD(x.sana),
                   x.bolalar.familiya + " " + x.bolalar.ism,
                   x.summa,
-                  x.usul,
+                  USUL[x.usul] || x.usul,
                 ]),
               );
         const t =
@@ -1515,6 +1652,23 @@
           (k === "qarz" ? "qarzdorlar" : "tolovlar") + "_" + hm + ".csv";
         a.click();
       }
+
+      /* iPhone'da ikki marta bosganda kattalashishni o'chirish */
+      let lt = 0;
+      document.addEventListener(
+        "touchend",
+        (e) => {
+          const n = Date.now();
+          if (
+            n - lt < 350 &&
+            !/^(INPUT|TEXTAREA|SELECT)$/.test(e.target.tagName)
+          )
+            e.preventDefault();
+          lt = n;
+        },
+        { passive: false },
+      );
+      document.addEventListener("gesturestart", (e) => e.preventDefault());
 
       start();
     </script>
