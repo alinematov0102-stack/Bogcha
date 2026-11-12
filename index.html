@@ -1,0 +1,1347 @@
+<!doctype html>
+<html lang="uz">
+  <head>
+    <meta charset="utf-8" />
+    <meta
+      name="viewport"
+      content="width=device-width,initial-scale=1,viewport-fit=cover"
+    />
+    <meta name="theme-color" content="#2f8cff" />
+    <title>Bog'cha</title>
+    <style>
+      :root {
+        --b: #2f8cff;
+        --bl: #eaf3ff;
+        --t: #16253b;
+        --g: #6b7a90;
+        --r: #e5484d;
+        --ok: #1fa971;
+        --w: #fff;
+      }
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        -webkit-tap-highlight-color: transparent;
+      }
+      body {
+        font:
+          16px system-ui,
+          sans-serif;
+        background: var(--bl);
+        color: var(--t);
+        padding-bottom: 90px;
+      }
+      #app {
+        max-width: 520px;
+        margin: auto;
+        padding: 16px;
+      }
+      h2 {
+        margin: 6px 0;
+      }
+      h3 {
+        margin: 18px 0 8px;
+      }
+      .mut {
+        color: var(--g);
+        font-size: 14px;
+      }
+      .c {
+        text-align: center;
+        margin: 20px 0;
+      }
+      .grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
+        margin: 12px 0;
+      }
+      .card {
+        background: var(--w);
+        border-radius: 18px;
+        padding: 14px;
+        box-shadow: 0 2px 10px #2f8cff1a;
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+        margin-bottom: 10px;
+      }
+      .grid .card {
+        margin: 0;
+      }
+      .card span {
+        color: var(--g);
+        font-size: 13px;
+      }
+      .card b {
+        font-size: 18px;
+      }
+      .card.ok b,
+      .gr {
+        color: var(--ok);
+      }
+      .card.bad b,
+      .rd {
+        color: var(--r);
+      }
+      .wide {
+        background: linear-gradient(135deg, #2f8cff, #6db6ff);
+      }
+      .wide span {
+        color: #ffffffcc;
+      }
+      .wide b {
+        font-size: 24px;
+        color: #fff;
+      }
+      .row {
+        background: var(--w);
+        border-radius: 16px;
+        padding: 12px;
+        margin-bottom: 8px;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        justify-content: space-between;
+      }
+      .row > div:not(.av) {
+        flex: 1;
+        min-width: 0;
+      }
+      .row small {
+        display: block;
+        color: var(--g);
+        font-size: 13px;
+        margin-top: 2px;
+      }
+      .av {
+        width: 42px;
+        height: 42px;
+        border-radius: 50%;
+        background: var(--bl);
+        color: var(--b);
+        display: grid;
+        place-items: center;
+        font-weight: 700;
+        flex: none;
+      }
+      input,
+      select,
+      textarea {
+        width: 100%;
+        padding: 13px;
+        border: 1.5px solid #d5e4f7;
+        border-radius: 14px;
+        font: inherit;
+        background: #fff;
+        margin: 4px 0 10px;
+      }
+      .bar {
+        display: flex;
+        gap: 8px;
+        align-items: center;
+        margin: 10px 0;
+      }
+      .bar input {
+        margin: 0;
+      }
+      .btn {
+        width: 100%;
+        padding: 14px;
+        border: 0;
+        border-radius: 14px;
+        background: var(--b);
+        color: #fff;
+        font: 600 16px system-ui;
+        margin-top: 8px;
+      }
+      .btn.sm {
+        width: auto;
+        white-space: nowrap;
+        padding: 12px 14px;
+        margin: 0;
+      }
+      .btn.light {
+        background: var(--bl);
+        color: var(--b);
+      }
+      .btn.red {
+        background: var(--r);
+      }
+      .pill {
+        font-size: 12px;
+        font-weight: 600;
+        padding: 6px 10px;
+        border-radius: 12px;
+        text-align: center;
+      }
+      .pill.tolangan {
+        background: #e1f7ee;
+        color: var(--ok);
+      }
+      .pill.qisman {
+        background: #fff3d6;
+        color: #b7791f;
+      }
+      .pill.tolanmagan {
+        background: #ffe5e6;
+        color: var(--r);
+      }
+      .tabs {
+        display: flex;
+        background: #fff;
+        border-radius: 14px;
+        padding: 4px;
+        margin-bottom: 8px;
+      }
+      .tabs button {
+        flex: 1;
+        padding: 10px;
+        border: 0;
+        border-radius: 11px;
+        background: none;
+        font: 600 15px system-ui;
+        color: var(--g);
+      }
+      .tabs .on {
+        background: var(--b);
+        color: #fff;
+      }
+      nav {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        background: #fff;
+        display: none;
+        padding: 8px 6px calc(8px + env(safe-area-inset-bottom));
+        box-shadow: 0 -4px 18px #2f8cff22;
+        z-index: 5;
+      }
+      nav button {
+        flex: 1;
+        border: 0;
+        background: none;
+        color: var(--g);
+        font: 600 11px system-ui;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 2px;
+        padding: 4px;
+      }
+      nav b {
+        font-size: 22px;
+      }
+      nav .on {
+        color: var(--b);
+      }
+      #modal {
+        display: none;
+        position: fixed;
+        inset: 0;
+        background: #0007;
+        z-index: 10;
+        align-items: flex-end;
+        justify-content: center;
+      }
+      .sheet {
+        background: #fff;
+        width: 100%;
+        max-width: 520px;
+        max-height: 90vh;
+        overflow: auto;
+        border-radius: 24px 24px 0 0;
+        padding: 20px;
+        position: relative;
+      }
+      .sheet label {
+        display: block;
+        font-size: 13px;
+        color: var(--g);
+        margin-top: 6px;
+      }
+      .sheet p {
+        margin: 6px 0;
+      }
+      .x {
+        position: absolute;
+        right: 14px;
+        top: 12px;
+        border: 0;
+        background: var(--bl);
+        width: 34px;
+        height: 34px;
+        border-radius: 50%;
+      }
+      #toast {
+        position: fixed;
+        top: 14px;
+        left: 50%;
+        transform: translate(-50%, -120px);
+        background: var(--t);
+        color: #fff;
+        padding: 12px 18px;
+        border-radius: 14px;
+        z-index: 20;
+        transition: 0.3s;
+        max-width: 90%;
+      }
+      #toast.show {
+        transform: translate(-50%, 0);
+      }
+      .login {
+        max-width: 360px;
+        margin: 12vh auto 0;
+        text-align: center;
+      }
+      .logo {
+        font-size: 64px;
+      }
+      .chips {
+        display: flex;
+        gap: 6px;
+        margin-top: 8px;
+      }
+      .chip {
+        flex: 1;
+        padding: 9px 2px;
+        border: 1.5px solid #d5e4f7;
+        border-radius: 12px;
+        background: #fff;
+        font: 600 12px system-ui;
+        color: var(--g);
+      }
+      .s_keldi {
+        background: var(--ok);
+        color: #fff;
+        border-color: var(--ok);
+      }
+      .s_kelmadi {
+        background: var(--r);
+        color: #fff;
+        border-color: var(--r);
+      }
+      .s_sababli {
+        background: #f0a020;
+        color: #fff;
+        border-color: #f0a020;
+      }
+      .s_sababsiz {
+        background: #7b5cd6;
+        color: #fff;
+        border-color: #7b5cd6;
+      }
+      .back {
+        border: 0;
+        background: none;
+        color: var(--b);
+        font: 600 16px system-ui;
+        margin-bottom: 6px;
+      }
+      .card.chart {
+        flex-direction: row;
+        align-items: flex-end;
+        height: 150px;
+        gap: 8px;
+      }
+      .col {
+        flex: 1;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+      }
+      .bars {
+        flex: 1;
+        width: 100%;
+        display: flex;
+        align-items: flex-end;
+        gap: 3px;
+      }
+      .bars i {
+        flex: 1;
+        border-radius: 4px 4px 0 0;
+        min-height: 2px;
+      }
+      @media print {
+        nav,
+        .noprint,
+        .back {
+          display: none !important;
+        }
+        body {
+          background: #fff;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div id="app"></div>
+    <nav></nav>
+    <div id="modal"></div>
+    <div id="toast"></div>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
+    <script>
+      /* ====== SOZLAMA: faqat shu ikki qatorni o'zgartiring ====== */
+      const SB_URL = "https://csbpoxykhgfkzgxabnty.supabase.co";
+      const SB_KEY = "sb_publishable_9FJvqjmyJS8N2tbuoLBdCg_F103ygXX";
+      /* ========================================================= */
+      const sb = supabase.createClient(SB_URL, SB_KEY);
+      const $ = (s) => document.querySelector(s),
+        E = (s) =>
+          String(s ?? "").replace(
+            /[&<>"']/g,
+            (c) =>
+              ({
+                "&": "&amp;",
+                "<": "&lt;",
+                ">": "&gt;",
+                '"': "&quot;",
+                "'": "&#39;",
+              })[c],
+          );
+      const M = (n) => Number(n || 0).toLocaleString("ru-RU") + " so'm";
+      const D = () =>
+          new Date().toLocaleDateString("sv-SE", { timeZone: "Asia/Tashkent" }),
+        MO = () => D().slice(0, 7);
+      const nxt = (m) => {
+        const d = new Date(m + "-01T00:00:00Z");
+        d.setUTCMonth(d.getUTCMonth() + 1);
+        return d.toISOString().slice(0, 10);
+      };
+      let me,
+        tab = "bosh",
+        sub = "",
+        sq = "",
+        tm = MO(),
+        tf = "hamma",
+        mm = MO(),
+        dd = D(),
+        hm = MO();
+      const can = (p) =>
+        me && (me.rol === "admin" || (me.ruxsatlar || []).includes(p));
+      const toast = (m) => {
+        const t = $("#toast");
+        t.textContent = m;
+        t.className = "show";
+        setTimeout(() => (t.className = ""), 3500);
+      };
+      async function q(p) {
+        const r = await p;
+        if (r.error) {
+          toast(r.error.message);
+          throw r.error;
+        }
+        return r.data;
+      }
+      const sheet = (h) => {
+        $("#modal").innerHTML =
+          '<div class="sheet"><button class="x" onclick="shut()">✕</button>' +
+          h +
+          "</div>";
+        $("#modal").style.display = "flex";
+      };
+      const shut = () => {
+        $("#modal").style.display = "none";
+      };
+      const back =
+        '<button class="back noprint" onclick="sub=\'\';render()">← Orqaga</button>';
+
+      /* ---------- Umumiy forma ---------- */
+      function form(title, fields, v, save, del) {
+        window._save = save;
+        window._del = del;
+        window._f = fields;
+        sheet(
+          "<h3>" +
+            title +
+            "</h3>" +
+            fields
+              .map((f) => {
+                const val = v?.[f.k] ?? f.d ?? "",
+                  id = "f_" + f.k;
+                const i =
+                  f.t === "select"
+                    ? '<select id="' +
+                      id +
+                      '">' +
+                      f.o
+                        .map(
+                          (o) =>
+                            '<option value="' +
+                            E(o[0]) +
+                            '"' +
+                            (String(o[0]) === String(val) ? " selected" : "") +
+                            ">" +
+                            E(o[1]) +
+                            "</option>",
+                        )
+                        .join("") +
+                      "</select>"
+                    : f.t === "area"
+                      ? '<textarea id="' +
+                        id +
+                        '" rows="3">' +
+                        E(val) +
+                        "</textarea>"
+                      : '<input id="' +
+                        id +
+                        '" type="' +
+                        (f.t || "text") +
+                        '" value="' +
+                        E(val) +
+                        '"' +
+                        (f.t === "number" ? ' inputmode="decimal"' : "") +
+                        ">";
+                return "<label>" + f.l + (f.r ? " *" : "") + i + "</label>";
+              })
+              .join("") +
+            '<button class="btn" onclick="sendForm()">Saqlash</button>' +
+            (del
+              ? '<button class="btn red" onclick="delForm()">O‘chirish</button>'
+              : ""),
+        );
+      }
+      async function sendForm() {
+        const o = {};
+        for (const f of window._f) {
+          const x = $("#f_" + f.k).value.trim();
+          o[f.k] = x === "" ? null : f.t === "number" ? Number(x) : x;
+          if (f.r && o[f.k] === null)
+            return toast("“" + f.l + "” to‘ldirilishi shart");
+        }
+        try {
+          await window._save(o);
+          shut();
+          render();
+        } catch (e) {}
+      }
+      async function delForm() {
+        if (!confirm("Rostdan o‘chirasizmi?")) return;
+        try {
+          await window._del();
+          shut();
+          render();
+        } catch (e) {}
+      }
+
+      /* ---------- Kirish ---------- */
+      function loginView() {
+        $("nav").style.display = "none";
+        $("#app").innerHTML =
+          '<div class="login"><div class="logo">🧸</div><h1>Bog‘cha</h1><p class="mut">Boshqaruv tizimi</p><br><input id="lg" placeholder="Login" autocapitalize="none" autocomplete="username"><input id="ps" type="password" placeholder="Parol" autocomplete="current-password"><button class="btn" onclick="login()">Kirish</button></div>';
+      }
+      async function login() {
+        let u = $("#lg").value.trim();
+        if (!u.includes("@")) u += "@bogcha.uz";
+        const { error } = await sb.auth.signInWithPassword({
+          email: u,
+          password: $("#ps").value,
+        });
+        if (error) return toast("Login yoki parol noto‘g‘ri");
+        start();
+      }
+      async function start() {
+        if (SB_KEY.startsWith("SHU_"))
+          return ($("#app").innerHTML =
+            '<p class="c">index.html ichida SB_KEY ni o‘zingizning kalitingizga almashtiring.</p>');
+        const {
+          data: { session },
+        } = await sb.auth.getSession();
+        if (!session) return loginView();
+        const { data } = await sb
+          .from("profillar")
+          .select("*")
+          .eq("id", session.user.id)
+          .single();
+        if (!data || !data.faol) {
+          await sb.auth.signOut();
+          toast("Hisob faol emas");
+          return loginView();
+        }
+        me = data;
+        $("nav").style.display = "flex";
+        render();
+      }
+      const logout = async () => {
+        await sb.auth.signOut();
+        me = null;
+        loginView();
+      };
+      function parol() {
+        form(
+          "Parolni almashtirish",
+          [{ k: "p", l: "Yangi parol (kamida 6 belgi)", t: "password", r: 1 }],
+          {},
+          async (o) => {
+            if (o.p.length < 6) {
+              toast("Parol juda qisqa");
+              throw 0;
+            }
+            const { error } = await sb.auth.updateUser({ password: o.p });
+            if (error) {
+              toast(error.message);
+              throw error;
+            }
+            toast("Parol almashtirildi");
+          },
+        );
+      }
+
+      /* ---------- Navigatsiya ---------- */
+      function navHtml() {
+        const t = [
+          ["bosh", "🏠", "Bosh"],
+          ["bolalar", "👶", "Bolalar"],
+          ["tolov", "💳", "To‘lov"],
+          ["moliya", "📊", "Moliya"],
+          ["yana", "☰", "Yana"],
+        ];
+        $("nav").innerHTML = t
+          .filter((x) =>
+            x[0] === "tolov"
+              ? can("tolovlar")
+              : x[0] === "moliya"
+                ? can("kirim_chiqim")
+                : 1,
+          )
+          .map(
+            (x) =>
+              '<button class="' +
+              (tab === x[0] ? "on" : "") +
+              '" onclick="go(\'' +
+              x[0] +
+              "')\"><b>" +
+              x[1] +
+              "</b>" +
+              x[2] +
+              "</button>",
+          )
+          .join("");
+      }
+      const go = (t) => {
+        tab = t;
+        sub = "";
+        scrollTo(0, 0);
+        render();
+      };
+      async function render() {
+        navHtml();
+        const a = $("#app");
+        if (!a.innerHTML) a.innerHTML = '<p class="mut c">Yuklanmoqda…</p>';
+        try {
+          const v = { bosh, bolalar, tolov, moliya, yana }[tab];
+          a.innerHTML = await v();
+        } catch (e) {
+          a.innerHTML =
+            '<p class="mut c">Xatolik yuz berdi. Qayta urinib ko‘ring.</p>';
+        }
+      }
+
+      /* ---------- Bosh sahifa ---------- */
+      async function bosh() {
+        const s = await q(sb.rpc("dashboard_statistika"));
+        const m = await q(
+          sb
+            .from("kirim_chiqim_oylik")
+            .select("*")
+            .order("oy", { ascending: false })
+            .limit(6),
+        );
+        const mx = Math.max(1, ...m.map((x) => Math.max(+x.kirim, +x.chiqim)));
+        const c = (l, v, k) =>
+          '<div class="card ' +
+          (k || "") +
+          '"><span>' +
+          l +
+          "</span><b>" +
+          v +
+          "</b></div>";
+        return (
+          "<h2>Salom, " +
+          E(me.ism || "") +
+          ' 👋</h2><p class="mut">' +
+          D() +
+          '</p><div class="grid">' +
+          c("Jami bolalar", s.jami_bolalar) +
+          c("Bugun kelgan", s.bugun_kelgan, "ok") +
+          c("Bugun kelmagan", s.bugun_kelmagan, "bad") +
+          c("To‘lov qilganlar", s.tolov_qilganlar, "ok") +
+          c("Qarzdorlar", s.qarzdorlar, "bad") +
+          c("Bugungi kirim", M(s.bugungi_kirim)) +
+          c("Oylik kirim", M(s.oylik_kirim), "ok") +
+          c("Oylik chiqim", M(s.oylik_chiqim), "bad") +
+          "</div>" +
+          '<div class="card wide"><span>Umumiy balans</span><b>' +
+          M(s.umumiy_balans) +
+          "</b><span>Jami qarzdorlik: " +
+          M(s.jami_qarz) +
+          "</span></div>" +
+          '<h3>So‘nggi oylar</h3><div class="card chart">' +
+          m
+            .reverse()
+            .map(
+              (x) =>
+                '<div class="col"><div class="bars"><i style="height:' +
+                (x.kirim / mx) * 100 +
+                '%;background:var(--ok)"></i><i style="height:' +
+                (x.chiqim / mx) * 100 +
+                '%;background:var(--r)"></i></div><small>' +
+                x.oy.slice(5, 7) +
+                "/" +
+                x.oy.slice(2, 4) +
+                "</small></div>",
+            )
+            .join("") +
+          '</div><p class="mut c">🟢 kirim &nbsp; 🔴 chiqim</p>'
+        );
+      }
+
+      /* ---------- Bolalar ---------- */
+      async function bolalar() {
+        window._b = await q(
+          sb
+            .from("bolalar")
+            .select("*,guruhlar(nomi)")
+            .eq("faol", true)
+            .order("familiya"),
+        );
+        return (
+          '<div class="bar"><input placeholder="🔍 Qidirish…" value="' +
+          E(sq) +
+          '" oninput="sq=this.value;relist()">' +
+          (can("bolalar")
+            ? '<button class="btn sm" onclick="bForm()">+ Qo‘shish</button>'
+            : "") +
+          '</div><div id="lst">' +
+          bList() +
+          "</div>"
+        );
+      }
+      const bList = () => {
+        const k = sq.toLowerCase(),
+          r = window._b.filter((b) =>
+            (b.ism + " " + b.familiya + " " + (b.telefon || ""))
+              .toLowerCase()
+              .includes(k),
+          );
+        return r.length
+          ? r
+              .map(
+                (b) =>
+                  '<div class="row" onclick="bInfo(\'' +
+                  b.id +
+                  '\')"><div class="av">' +
+                  E(b.ism[0]) +
+                  "</div><div><b>" +
+                  E(b.familiya + " " + b.ism) +
+                  "</b><small>" +
+                  E(b.guruhlar?.nomi || "Guruhsiz") +
+                  " · " +
+                  M(b.oylik_tolov) +
+                  "</small></div></div>",
+              )
+              .join("")
+          : '<p class="mut c">Bolalar yo‘q</p>';
+      };
+      const relist = () => {
+        $("#lst").innerHTML = bList();
+      };
+      function bInfo(id) {
+        const b = window._b.find((x) => x.id === id);
+        sheet(
+          "<h3>" +
+            E(b.familiya + " " + b.ism) +
+            "</h3><p>👪 " +
+            E(b.ota_ona_fish || "—") +
+            "</p><p>📞 " +
+            E(b.telefon || "—") +
+            "</p><p>🏠 " +
+            E(b.manzil || "—") +
+            "</p><p>🎂 " +
+            (b.tugilgan_sana || "—") +
+            "</p><p>📅 Kelgan: " +
+            b.kelgan_sana +
+            "</p><p>👥 " +
+            E(b.guruhlar?.nomi || "Guruhsiz") +
+            "</p><p>💰 " +
+            M(b.oylik_tolov) +
+            ' / oy</p><p class="mut">' +
+            E(b.izoh || "") +
+            "</p>" +
+            (can("tolovlar")
+              ? '<button class="btn" onclick="hist(\'' +
+                id +
+                "')\">To‘lov tarixi</button>"
+              : "") +
+            (can("bolalar")
+              ? '<button class="btn light" onclick="bForm(\'' +
+                id +
+                "')\">Tahrirlash</button>"
+              : ""),
+        );
+      }
+      async function hist(id) {
+        const r = await q(
+          sb
+            .from("tolovlar")
+            .select("*,oylik_hisoblar(oy)")
+            .eq("bola_id", id)
+            .order("sana", { ascending: false }),
+        );
+        sheet(
+          "<h3>To‘lov tarixi</h3>" +
+            (r
+              .map(
+                (x) =>
+                  '<div class="row"><div><b>' +
+                  M(x.summa) +
+                  "</b><small>" +
+                  x.sana +
+                  " · " +
+                  x.oylik_hisoblar.oy.slice(0, 7) +
+                  " oyi uchun · " +
+                  E(x.usul) +
+                  "</small></div></div>",
+              )
+              .join("") || '<p class="mut c">To‘lov yo‘q</p>'),
+        );
+      }
+      async function bForm(id) {
+        const g = await q(sb.from("guruhlar").select("id,nomi").order("nomi"));
+        const b = id
+          ? window._b.find((x) => x.id === id)
+          : { kelgan_sana: D() };
+        const F = [
+          { k: "ism", l: "Ism", r: 1 },
+          { k: "familiya", l: "Familiya", r: 1 },
+          { k: "tugilgan_sana", l: "Tug‘ilgan sana", t: "date" },
+          {
+            k: "jins",
+            l: "Jinsi",
+            t: "select",
+            o: [
+              ["", "—"],
+              ["ogil", "O‘g‘il"],
+              ["qiz", "Qiz"],
+            ],
+          },
+          { k: "ota_ona_fish", l: "Ota-ona F.I.Sh." },
+          { k: "telefon", l: "Telefon", t: "tel" },
+          { k: "manzil", l: "Uy manzili" },
+          { k: "kelgan_sana", l: "Bog‘chaga kelgan sana", t: "date", r: 1 },
+          {
+            k: "guruh_id",
+            l: "Guruh",
+            t: "select",
+            o: [["", "Guruhsiz"], ...g.map((x) => [x.id, x.nomi])],
+          },
+          { k: "oylik_tolov", l: "Oylik to‘lov (so‘m)", t: "number", r: 1 },
+          { k: "izoh", l: "Izoh", t: "area" },
+        ];
+        if (id)
+          F.push({
+            k: "ketgan_sana",
+            l: "Ketgan sana (bog‘chadan ketgan bo‘lsa)",
+            t: "date",
+          });
+        form(
+          id ? "Tahrirlash" : "Yangi bola",
+          F,
+          b,
+          (o) =>
+            id
+              ? q(sb.from("bolalar").update(o).eq("id", id))
+              : q(sb.from("bolalar").insert(o)),
+          id && me.rol === "admin"
+            ? () => q(sb.from("bolalar").delete().eq("id", id))
+            : null,
+        );
+      }
+
+      /* ---------- Oylik to'lovlar ---------- */
+      async function tolov() {
+        const r =
+          tf === "qarz"
+            ? await q(
+                sb
+                  .from("qarzdorlar")
+                  .select("*")
+                  .order("kechikkan_kun", { ascending: false }),
+              )
+            : await q(
+                sb
+                  .from("oylik_hisoblar")
+                  .select("*,bolalar(ism,familiya)")
+                  .eq("oy", tm + "-01")
+                  .order("created_at"),
+              );
+        window._h = r;
+        const nm = (x) =>
+            x.bolalar
+              ? x.bolalar.familiya + " " + x.bolalar.ism
+              : x.familiya + " " + x.ism,
+          T = {
+            tolangan: "To‘langan",
+            qisman: "Qisman",
+            tolanmagan: "To‘lanmagan",
+          };
+        return (
+          '<div class="tabs"><button class="' +
+          (tf === "hamma" ? "on" : "") +
+          '" onclick="tf=\'hamma\';render()">Oylik</button><button class="' +
+          (tf === "qarz" ? "on" : "") +
+          '" onclick="tf=\'qarz\';render()">Qarzdorlar</button></div>' +
+          (tf === "hamma"
+            ? '<div class="bar"><input type="month" value="' +
+              tm +
+              '" onchange="tm=this.value||tm;render()"><button class="btn sm" onclick="mk()">Hisob yaratish</button></div>'
+            : "") +
+          (r
+            .map(
+              (x) =>
+                '<div class="row" onclick="pay(\'' +
+                (x.hisob_id || x.id) +
+                "')\"><div><b>" +
+                E(nm(x)) +
+                "</b><small>" +
+                x.oy.slice(0, 7) +
+                " · " +
+                M(x.tolangan) +
+                " / " +
+                M(x.summa) +
+                (x.kechikkan_kun > 0
+                  ? " · " + x.kechikkan_kun + " kun kechikkan"
+                  : "") +
+                '</small></div><span class="pill ' +
+                x.holat +
+                '">' +
+                T[x.holat] +
+                (x.holat !== "tolangan" ? "<br>" + M(x.qarz) : "") +
+                "</span></div>",
+            )
+            .join("") ||
+            '<p class="mut c">Ma’lumot yo‘q. “Hisob yaratish” tugmasi shu oy uchun barcha bolalarga hisob ochadi.</p>')
+        );
+      }
+      async function mk() {
+        const n = await q(
+          sb.rpc("oylik_hisob_yaratish", {
+            p_oy: tm + "-01",
+            p_muddat_kuni: 10,
+          }),
+        );
+        toast(n + " ta yangi hisob yaratildi");
+        render();
+      }
+      function pay(id) {
+        const x = window._h.find((y) => (y.hisob_id || y.id) === id);
+        form(
+          "To‘lov qabul qilish",
+          [
+            { k: "summa", l: "Summa (so‘m)", t: "number", r: 1, d: x.qarz },
+            { k: "sana", l: "Sana", t: "date", d: D(), r: 1 },
+            {
+              k: "usul",
+              l: "Usul",
+              t: "select",
+              o: [
+                ["naqd", "Naqd"],
+                ["karta", "Karta"],
+                ["otkazma", "O‘tkazma"],
+              ],
+            },
+          ],
+          {},
+          (o) => q(sb.from("tolovlar").insert({ ...o, hisob_id: id })),
+        );
+      }
+
+      /* ---------- Kirim-chiqim ---------- */
+      const KK = {
+        kirim: [
+          ["oylik_tolov", "Oylik to‘lov"],
+          ["qoshimcha_tolov", "Qo‘shimcha to‘lov"],
+          ["boshqa_daromad", "Boshqa daromad"],
+        ],
+        chiqim: [
+          ["oziq_ovqat", "Oziq-ovqat"],
+          ["xodimlar_oyligi", "Xodimlar oyligi"],
+          ["kommunal", "Kommunal to‘lovlar"],
+          ["oyinchoq_jihoz", "O‘yinchoq va jihozlar"],
+          ["boshqa_xarajat", "Boshqa xarajat"],
+        ],
+      };
+      async function moliya() {
+        const r = await q(
+          sb
+            .from("kirim_chiqim")
+            .select("*")
+            .gte("sana", mm + "-01")
+            .lt("sana", nxt(mm))
+            .order("sana", { ascending: false })
+            .order("created_at", { ascending: false }),
+        );
+        window._k = r;
+        const sm = (t) =>
+            r.filter((x) => x.tur === t).reduce((a, x) => a + +x.summa, 0),
+          ki = sm("kirim"),
+          ch = sm("chiqim");
+        const lb = Object.fromEntries([...KK.kirim, ...KK.chiqim]);
+        return (
+          '<div class="bar"><input type="month" value="' +
+          mm +
+          '" onchange="mm=this.value||mm;render()"></div><div class="grid"><div class="card ok"><span>Kirim</span><b>' +
+          M(ki) +
+          '</b></div><div class="card bad"><span>Chiqim</span><b>' +
+          M(ch) +
+          "</b></div></div>" +
+          '<div class="card wide"><span>Sof foyda</span><b>' +
+          M(ki - ch) +
+          '</b></div><div class="bar"><button class="btn sm" onclick="kc(\'kirim\')">+ Kirim</button><button class="btn sm red" onclick="kc(\'chiqim\')">− Chiqim</button></div>' +
+          (r
+            .map(
+              (x) =>
+                '<div class="row" onclick="kd(\'' +
+                x.id +
+                "')\"><div><b>" +
+                lb[x.kategoriya] +
+                "</b><small>" +
+                x.sana +
+                (x.izoh ? " · " + E(x.izoh) : "") +
+                '</small></div><b class="' +
+                (x.tur === "kirim" ? "gr" : "rd") +
+                '">' +
+                (x.tur === "kirim" ? "+" : "−") +
+                M(x.summa) +
+                "</b></div>",
+            )
+            .join("") || '<p class="mut c">Operatsiya yo‘q</p>')
+        );
+      }
+      function kc(t) {
+        form(
+          t === "kirim" ? "Yangi kirim" : "Yangi chiqim",
+          [
+            { k: "kategoriya", l: "Kategoriya", t: "select", o: KK[t] },
+            { k: "sana", l: "Sana", t: "date", d: D(), r: 1 },
+            { k: "summa", l: "Summa (so‘m)", t: "number", r: 1 },
+            { k: "izoh", l: "Izoh" },
+          ],
+          {},
+          (o) => q(sb.from("kirim_chiqim").insert({ ...o, tur: t })),
+        );
+      }
+      function kd(id) {
+        const x = window._k.find((y) => y.id === id);
+        if (x.tolov_id)
+          return toast("Bu kirim bola to‘lovidan avtomatik yozilgan");
+        if (me.rol !== "admin") return toast("Faqat admin o‘chira oladi");
+        if (confirm("Operatsiyani o‘chirasizmi?"))
+          q(sb.from("kirim_chiqim").delete().eq("id", id)).then(render);
+      }
+
+      /* ---------- Yana ---------- */
+      async function yana() {
+        if (sub === "davomat") return davomat();
+        if (sub === "guruhlar") return guruhlar();
+        if (sub === "hisobot") return hisobot();
+        const m = (a, i, l) =>
+          '<div class="row" onclick="' +
+          a +
+          '"><div class="av">' +
+          i +
+          "</div><b>" +
+          l +
+          "</b></div>";
+        return (
+          "<h2>Bo‘limlar</h2>" +
+          (can("davomat") ? m("sub='davomat';render()", "✅", "Davomat") : "") +
+          (can("guruhlar")
+            ? m("sub='guruhlar';render()", "👥", "Guruhlar")
+            : "") +
+          (can("hisobotlar")
+            ? m("sub='hisobot';render()", "📈", "Hisobotlar")
+            : "") +
+          m("parol()", "🔑", "Parolni almashtirish") +
+          m("logout()", "🚪", "Chiqish")
+        );
+      }
+
+      /* ---------- Davomat ---------- */
+      async function davomat() {
+        const [b, r] = await Promise.all([
+          q(
+            sb
+              .from("bolalar")
+              .select("id,ism,familiya")
+              .eq("faol", true)
+              .order("familiya"),
+          ),
+          q(sb.from("davomat").select("bola_id,holat").eq("sana", dd)),
+        ]);
+        const mp = Object.fromEntries(r.map((x) => [x.bola_id, x.holat])),
+          H = [
+            ["keldi", "Keldi"],
+            ["kelmadi", "Kelmadi"],
+            ["sababli", "Sababli"],
+            ["sababsiz", "Sababsiz"],
+          ];
+        return (
+          back +
+          '<h2>Davomat</h2><div class="bar"><input type="date" value="' +
+          dd +
+          '" onchange="dd=this.value||dd;render()"></div>' +
+          b
+            .map(
+              (x) =>
+                '<div class="card"><b>' +
+                E(x.familiya + " " + x.ism) +
+                '</b><div class="chips">' +
+                H.map(
+                  (h) =>
+                    '<button class="chip ' +
+                    (mp[x.id] === h[0] ? "s_" + h[0] : "") +
+                    '" onclick="mark(\'' +
+                    x.id +
+                    "','" +
+                    h[0] +
+                    "')\">" +
+                    h[1] +
+                    "</button>",
+                ).join("") +
+                "</div></div>",
+            )
+            .join("")
+        );
+      }
+      async function mark(id, h) {
+        const y = scrollY;
+        await q(
+          sb
+            .from("davomat")
+            .upsert(
+              { bola_id: id, sana: dd, holat: h },
+              { onConflict: "bola_id,sana" },
+            ),
+        );
+        await render();
+        scrollTo(0, y);
+      }
+
+      /* ---------- Guruhlar ---------- */
+      async function guruhlar() {
+        const g = await q(
+          sb.from("guruhlar_royxati").select("*").order("nomi"),
+        );
+        window._g = g;
+        return (
+          back +
+          '<div class="bar"><h2 style="flex:1">Guruhlar</h2><button class="btn sm" onclick="gForm()">+ Guruh</button></div>' +
+          (g
+            .map(
+              (x) =>
+                '<div class="row" onclick="gInfo(\'' +
+                x.id +
+                '\')"><div class="av">👥</div><div><b>' +
+                E(x.nomi) +
+                "</b><small>Tarbiyachi: " +
+                E(x.tarbiyachi || "—") +
+                " · " +
+                x.bolalar_soni +
+                " ta bola</small></div></div>",
+            )
+            .join("") || '<p class="mut c">Guruh yo‘q</p>')
+        );
+      }
+      async function gInfo(id) {
+        const g = window._g.find((x) => x.id === id);
+        const b = await q(
+          sb
+            .from("bolalar")
+            .select("familiya,ism")
+            .eq("guruh_id", id)
+            .eq("faol", true)
+            .order("familiya"),
+        );
+        sheet(
+          "<h3>" +
+            E(g.nomi) +
+            '</h3><p class="mut">Tarbiyachi: ' +
+            E(g.tarbiyachi || "—") +
+            "</p>" +
+            (b
+              .map(
+                (x, i) =>
+                  "<p>" + (i + 1) + ". " + E(x.familiya + " " + x.ism) + "</p>",
+              )
+              .join("") || '<p class="mut">Bolalar yo‘q</p>') +
+            '<p class="mut">Bolani boshqa guruhga o‘tkazish: Bolalar → bolani tanlang → Tahrirlash → Guruh.</p><button class="btn light" onclick="gForm(\'' +
+            id +
+            "')\">Tahrirlash</button>",
+        );
+      }
+      function gForm(id) {
+        const g = id ? window._g.find((x) => x.id === id) : {};
+        form(
+          id ? "Guruhni tahrirlash" : "Yangi guruh",
+          [
+            { k: "nomi", l: "Guruh nomi", r: 1 },
+            { k: "tarbiyachi", l: "Tarbiyachi F.I.Sh." },
+          ],
+          g,
+          (o) =>
+            id
+              ? q(sb.from("guruhlar").update(o).eq("id", id))
+              : q(sb.from("guruhlar").insert(o)),
+          id && me.rol === "admin"
+            ? () => q(sb.from("guruhlar").delete().eq("id", id))
+            : null,
+        );
+      }
+
+      /* ---------- Hisobotlar ---------- */
+      async function hisobot() {
+        const a = hm + "-01",
+          z = nxt(hm);
+        const [bs, ty, kk, qd, dv, gr, ks] = await Promise.all([
+          q(sb.from("bolalar").select("faol,kelgan_sana,ketgan_sana")),
+          q(sb.from("tolovlar_oylik").select("*").eq("oy", a)),
+          q(sb.from("kirim_chiqim_oylik").select("*").eq("oy", a)),
+          q(
+            sb
+              .from("qarzdorlar")
+              .select("*")
+              .order("kechikkan_kun", { ascending: false }),
+          ),
+          q(
+            sb
+              .from("davomat_oylik")
+              .select("keldi,kelmadi,sababli,sababsiz")
+              .eq("oy", a),
+          ),
+          q(sb.from("guruhlar_royxati").select("*").order("nomi")),
+          q(
+            sb
+              .from("tolovlar")
+              .select("*,bolalar(ism,familiya)")
+              .gte("sana", a)
+              .lt("sana", z)
+              .order("sana"),
+          ),
+        ]);
+        const S = (k) => dv.reduce((s, x) => s + Number(x[k]), 0),
+          t = ty[0] || {},
+          c = kk[0] || {};
+        window._r = { qd, ks };
+        const R = (l, v) =>
+          '<div class="row"><b>' + l + "</b><span>" + v + "</span></div>";
+        return (
+          back +
+          '<h2>Hisobotlar</h2><div class="bar"><input type="month" value="' +
+          hm +
+          '" onchange="hm=this.value||hm;render()"></div>' +
+          '<div class="bar noprint"><button class="btn sm" onclick="print()">PDF</button><button class="btn sm light" onclick="csv(\'qarz\')">Excel: qarzdorlar</button><button class="btn sm light" onclick="csv(\'tolov\')">Excel: to‘lovlar</button></div>' +
+          "<h3>Bolalar</h3>" +
+          R("Jami faol bolalar", bs.filter((x) => x.faol).length) +
+          R(
+            "Yangi kelganlar",
+            bs.filter((x) => x.kelgan_sana >= a && x.kelgan_sana < z).length,
+          ) +
+          R(
+            "Ketganlar",
+            bs.filter(
+              (x) => x.ketgan_sana && x.ketgan_sana >= a && x.ketgan_sana < z,
+            ).length,
+          ) +
+          "<h3>Oylik to‘lovlar</h3>" +
+          R("Rejadagi summa", M(t.rejadagi_summa)) +
+          R("Yig‘ilgan", M(t.yigilgan_summa)) +
+          R("Qolgan qarz", M(t.qolgan_qarz)) +
+          R(
+            "To‘langan / qisman / to‘lanmagan",
+            (t.tolangan_soni || 0) +
+              " / " +
+              (t.qisman_soni || 0) +
+              " / " +
+              (t.tolanmagan_soni || 0),
+          ) +
+          "<h3>Kirim-chiqim</h3>" +
+          R("Kirim", M(c.kirim)) +
+          R("Chiqim", M(c.chiqim)) +
+          R("Sof foyda", M(c.sof_foyda)) +
+          "<h3>Davomat</h3>" +
+          R("Keldi", S("keldi")) +
+          R("Kelmadi", S("kelmadi")) +
+          R("Sababli", S("sababli")) +
+          R("Sababsiz", S("sababsiz")) +
+          "<h3>Guruhlar</h3>" +
+          gr.map((x) => R(E(x.nomi), x.bolalar_soni + " ta bola")).join("") +
+          "<h3>Qarzdorlar (" +
+          qd.length +
+          ")</h3>" +
+          qd
+            .map((x) =>
+              R(
+                E(x.familiya + " " + x.ism) +
+                  " <small>" +
+                  x.oy.slice(0, 7) +
+                  "</small>",
+                M(x.qarz),
+              ),
+            )
+            .join("")
+        );
+      }
+      function csv(k) {
+        const { qd, ks } = window._r;
+        const rows =
+          k === "qarz"
+            ? [
+                [
+                  "Bola",
+                  "Telefon",
+                  "Oy",
+                  "Summa",
+                  "Tolangan",
+                  "Qarz",
+                  "Muddat",
+                ],
+              ].concat(
+                qd.map((x) => [
+                  x.familiya + " " + x.ism,
+                  x.telefon || "",
+                  x.oy.slice(0, 7),
+                  x.summa,
+                  x.tolangan,
+                  x.qarz,
+                  x.muddat,
+                ]),
+              )
+            : [["Sana", "Bola", "Summa", "Usul"]].concat(
+                ks.map((x) => [
+                  x.sana,
+                  x.bolalar.familiya + " " + x.bolalar.ism,
+                  x.summa,
+                  x.usul,
+                ]),
+              );
+        const t =
+          "\ufeff" +
+          rows
+            .map((r) =>
+              r.map((c) => '"' + String(c).replace(/"/g, '""') + '"').join(";"),
+            )
+            .join("\n");
+        const a = document.createElement("a");
+        a.href = URL.createObjectURL(new Blob([t], { type: "text/csv" }));
+        a.download =
+          (k === "qarz" ? "qarzdorlar" : "tolovlar") + "_" + hm + ".csv";
+        a.click();
+      }
+
+      start();
+    </script>
+  </body>
+</html>
