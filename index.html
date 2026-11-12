@@ -125,6 +125,20 @@
         font-weight: 700;
         flex: none;
       }
+      .av img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        border-radius: 50%;
+      }
+      .profile-photo {
+        display: block;
+        width: 112px;
+        height: 112px;
+        object-fit: cover;
+        border-radius: 20px;
+        margin: 10px auto;
+      }
       input,
       select,
       textarea {
@@ -385,7 +399,7 @@
     <script>
       /* ====== SOZLAMA: faqat shu ikki qatorni o'zgartiring ====== */
       const SB_URL = "https://csbpoxykhgfkzgxabnty.supabase.co";
-      const SB_KEY = "sb_publishable_9FJvqjmyJS8N2tbuoLBdCg_F103ygXX";
+      const SB_KEY = "PASTE_YOUR_EXISTING_SUPABASE_PUBLISHABLE_KEY_HERE";
       /* ========================================================= */
       const sb = supabase.createClient(SB_URL, SB_KEY);
       const $ = (s) => document.querySelector(s),
@@ -405,6 +419,11 @@
       const D = () =>
           new Date().toLocaleDateString("sv-SE", { timeZone: "Asia/Tashkent" }),
         MO = () => D().slice(0, 7);
+      const FD = (s) => {
+        const m = String(s || "").match(/^(\d{4})-(\d{2})-(\d{2})/);
+        return m ? m[3] + "." + m[2] + "." + m[1] : s || "—";
+      };
+      const PHOTO_BUCKET = "bolalar-rasmlari";
       const nxt = (m) => {
         const d = new Date(m + "-01T00:00:00Z");
         d.setUTCMonth(d.getUTCMonth() + 1);
@@ -462,38 +481,48 @@
                 const val = v?.[f.k] ?? f.d ?? "",
                   id = "f_" + f.k;
                 const i =
-                  f.t === "select"
-                    ? '<select id="' +
+                  f.t === "file"
+                    ? '<input id="' +
                       id +
-                      '">' +
-                      f.o
-                        .map(
-                          (o) =>
-                            '<option value="' +
-                            E(o[0]) +
-                            '"' +
-                            (String(o[0]) === String(val) ? " selected" : "") +
-                            ">" +
-                            E(o[1]) +
-                            "</option>",
-                        )
-                        .join("") +
-                      "</select>"
-                    : f.t === "area"
-                      ? '<textarea id="' +
+                      '" type="file" accept="image/jpeg,image/png,image/webp" onchange="previewPhoto(this)"><img id="photo-preview" class="profile-photo" alt="Bola rasmi" src="' +
+                      E(window._photoPreview || "") +
+                      '" style="' +
+                      (window._photoPreview ? "" : "display:none") +
+                      '">'
+                    : f.t === "select"
+                      ? '<select id="' +
                         id +
-                        '" rows="3">' +
-                        E(val) +
-                        "</textarea>"
-                      : '<input id="' +
-                        id +
-                        '" type="' +
-                        (f.t || "text") +
-                        '" value="' +
-                        E(val) +
-                        '"' +
-                        (f.t === "number" ? ' inputmode="decimal"' : "") +
-                        ">";
+                        '">' +
+                        f.o
+                          .map(
+                            (o) =>
+                              '<option value="' +
+                              E(o[0]) +
+                              '"' +
+                              (String(o[0]) === String(val)
+                                ? " selected"
+                                : "") +
+                              ">" +
+                              E(o[1]) +
+                              "</option>",
+                          )
+                          .join("") +
+                        "</select>"
+                      : f.t === "area"
+                        ? '<textarea id="' +
+                          id +
+                          '" rows="3">' +
+                          E(val) +
+                          "</textarea>"
+                        : '<input id="' +
+                          id +
+                          '" type="' +
+                          (f.t || "text") +
+                          '" value="' +
+                          E(val) +
+                          '"' +
+                          (f.t === "number" ? ' inputmode="decimal"' : "") +
+                          ">";
                 return "<label>" + f.l + (f.r ? " *" : "") + i + "</label>";
               })
               .join("") +
@@ -506,16 +535,89 @@
       async function sendForm() {
         const o = {};
         for (const f of window._f) {
+          if (f.t === "file") continue;
           const x = $("#f_" + f.k).value.trim();
           o[f.k] = x === "" ? null : f.t === "number" ? Number(x) : x;
           if (f.r && o[f.k] === null)
             return toast("“" + f.l + "” to‘ldirilishi shart");
         }
         try {
-          await window._save(o);
+          const photoField = window._f.find((f) => f.t === "file");
+          const photo = photoField
+            ? $("#f_" + photoField.k).files?.[0] || null
+            : null;
+          await window._save(o, photo);
           shut();
           render();
         } catch (e) {}
+      }
+      function previewPhoto(input) {
+        const file = input.files?.[0];
+        if (!file) return;
+        if (!["image/jpeg", "image/png", "image/webp"].includes(file.type)) {
+          input.value = "";
+          return toast("JPG, PNG yoki WebP rasm tanlang");
+        }
+        if (file.size > 5 * 1024 * 1024) {
+          input.value = "";
+          return toast("Rasm hajmi 5 MB dan oshmasin");
+        }
+        const reader = new FileReader();
+        reader.onload = () => {
+          const img = $("#photo-preview");
+          if (img) {
+            img.src = reader.result;
+            img.style.display = "block";
+          }
+        };
+        reader.readAsDataURL(file);
+      }
+      async function signedPhoto(path) {
+        if (!path) return "";
+        const { data, error } = await sb.storage
+          .from(PHOTO_BUCKET)
+          .createSignedUrl(path, 3600);
+        return error ? "" : data?.signedUrl || "";
+      }
+      async function saveChildPhoto(id, file, oldPath) {
+        if (!file) return oldPath || null;
+        if (!["image/jpeg", "image/png", "image/webp"].includes(file.type))
+          throw new Error("JPG, PNG yoki WebP rasm tanlang");
+        if (file.size > 5 * 1024 * 1024)
+          throw new Error("Rasm hajmi 5 MB dan oshmasin");
+        const ext =
+          file.type === "image/jpeg" ? "jpg" : file.type.split("/")[1];
+        const path =
+          String(id) +
+          "/" +
+          Date.now().toString(36) +
+          "-" +
+          Math.random().toString(36).slice(2) +
+          "." +
+          ext;
+        const bucket = sb.storage.from(PHOTO_BUCKET);
+        const { error: uploadError } = await bucket.upload(path, file, {
+          contentType: file.type,
+          cacheControl: "3600",
+          upsert: false,
+        });
+        if (uploadError) {
+          toast("Rasm saqlanmadi. Foto saqlash sozlamalarini tekshiring.");
+          throw uploadError;
+        }
+        const { error: updateError } = await sb
+          .from("bolalar")
+          .update({ rasm_path: path })
+          .eq("id", id);
+        if (updateError) {
+          await bucket.remove([path]);
+          toast(
+            "Rasm ustuni sozlanmagan. Supabase foto SQL sozlamasini bajaring.",
+          );
+          throw updateError;
+        }
+        if (oldPath && oldPath !== path) await bucket.remove([oldPath]);
+        return path;
       }
       async function delForm() {
         if (!confirm("Rostdan o‘chirasizmi?")) return;
@@ -707,6 +809,11 @@
             .eq("faol", true)
             .order("familiya"),
         );
+        await Promise.all(
+          window._b.map(async (b) => {
+            b._photoUrl = await signedPhoto(b.rasm_path);
+          }),
+        );
         return (
           '<div class="bar"><input placeholder="🔍 Qidirish…" value="' +
           E(sq) +
@@ -733,7 +840,9 @@
                   '<div class="row" onclick="bInfo(\'' +
                   b.id +
                   '\')"><div class="av">' +
-                  E(b.ism[0]) +
+                  (b._photoUrl
+                    ? '<img src="' + E(b._photoUrl) + '" alt="Bola rasmi">'
+                    : E((b.ism || "?")[0])) +
                   "</div><div><b>" +
                   E(b.familiya + " " + b.ism) +
                   "</b><small>" +
@@ -751,7 +860,12 @@
       function bInfo(id) {
         const b = window._b.find((x) => x.id === id);
         sheet(
-          "<h3>" +
+          (b._photoUrl
+            ? '<img class="profile-photo" src="' +
+              E(b._photoUrl) +
+              '" alt="Bola rasmi">'
+            : "") +
+            "<h3>" +
             E(b.familiya + " " + b.ism) +
             "</h3><p>👪 " +
             E(b.ota_ona_fish || "—") +
@@ -760,9 +874,9 @@
             "</p><p>🏠 " +
             E(b.manzil || "—") +
             "</p><p>🎂 " +
-            (b.tugilgan_sana || "—") +
+            FD(b.tugilgan_sana) +
             "</p><p>📅 Kelgan: " +
-            b.kelgan_sana +
+            FD(b.kelgan_sana) +
             "</p><p>👥 " +
             E(b.guruhlar?.nomi || "Guruhsiz") +
             "</p><p>💰 " +
@@ -798,9 +912,9 @@
                   '<div class="row"><div><b>' +
                   M(x.summa) +
                   "</b><small>" +
-                  x.sana +
+                  FD(x.sana) +
                   " · " +
-                  x.oylik_hisoblar.oy.slice(0, 7) +
+                  (x.oylik_hisoblar?.oy || "").slice(0, 7) +
                   " oyi uchun · " +
                   E(x.usul) +
                   "</small></div></div>",
@@ -813,6 +927,7 @@
         const b = id
           ? window._b.find((x) => x.id === id)
           : { kelgan_sana: D() };
+        window._photoPreview = await signedPhoto(b?.rasm_path);
         const F = [
           { k: "ism", l: "Ism", r: 1 },
           { k: "familiya", l: "Familiya", r: 1 },
@@ -838,6 +953,7 @@
             o: [["", "Guruhsiz"], ...g.map((x) => [x.id, x.nomi])],
           },
           { k: "oylik_tolov", l: "Oylik to‘lov (so‘m)", t: "number", r: 1 },
+          { k: "rasm_path", l: "Bola rasmi (5 MB gacha)", t: "file" },
           { k: "izoh", l: "Izoh", t: "area" },
         ];
         if (id)
@@ -850,10 +966,19 @@
           id ? "Tahrirlash" : "Yangi bola",
           F,
           b,
-          (o) =>
-            id
-              ? q(sb.from("bolalar").update(o).eq("id", id))
-              : q(sb.from("bolalar").insert(o)),
+          async (o, photo) => {
+            let savedId = id;
+            if (savedId) {
+              await q(sb.from("bolalar").update(o).eq("id", savedId));
+            } else {
+              const created = await q(
+                sb.from("bolalar").insert(o).select("id").single(),
+              );
+              savedId = created.id;
+            }
+            if (photo)
+              await saveChildPhoto(savedId, photo, b?.rasm_path || null);
+          },
           id && me.rol === "admin"
             ? () => q(sb.from("bolalar").delete().eq("id", id))
             : null,
@@ -877,7 +1002,28 @@
                   .eq("oy", tm + "-01")
                   .order("created_at"),
               );
-        window._h = r;
+        const invoiceIds = r.map((x) => x.hisob_id || x.id).filter(Boolean);
+        const payments = invoiceIds.length
+          ? await q(
+              sb
+                .from("tolovlar")
+                .select("hisob_id,sana")
+                .in("hisob_id", invoiceIds)
+                .order("sana", { ascending: false }),
+            )
+          : [];
+        const lastPayment = {};
+        payments.forEach((p) => {
+          if (
+            p.sana &&
+            (!lastPayment[p.hisob_id] || p.sana > lastPayment[p.hisob_id])
+          )
+            lastPayment[p.hisob_id] = p.sana;
+        });
+        window._h = r.map((x) => ({
+          ...x,
+          _lastPayment: lastPayment[x.hisob_id || x.id] || null,
+        }));
         const nm = (x) =>
             x.bolalar
               ? x.bolalar.familiya + " " + x.bolalar.ism
@@ -908,6 +1054,9 @@
                 "</b><small>" +
                 x.oy.slice(0, 7) +
                 " · " +
+                (x._lastPayment
+                  ? "Oxirgi to‘lov: " + FD(x._lastPayment) + " · "
+                  : "") +
                 M(x.tolangan) +
                 " / " +
                 M(x.summa) +
@@ -983,7 +1132,24 @@
             .order("sana", { ascending: false })
             .order("created_at", { ascending: false }),
         );
-        window._k = r;
+        const paymentIds = [
+          ...new Set(r.map((x) => x.tolov_id).filter(Boolean)),
+        ];
+        const linkedPayments = paymentIds.length
+          ? await q(
+              sb
+                .from("tolovlar")
+                .select("id,sana,bolalar(ism,familiya)")
+                .in("id", paymentIds),
+            )
+          : [];
+        const paymentById = Object.fromEntries(
+          linkedPayments.map((p) => [p.id, p]),
+        );
+        window._k = r.map((x) => ({
+          ...x,
+          _payment: x.tolov_id ? paymentById[x.tolov_id] || null : null,
+        }));
         const sm = (t) =>
             r.filter((x) => x.tur === t).reduce((a, x) => a + +x.summa, 0),
           ki = sm("kirim"),
@@ -1008,7 +1174,16 @@
                 "')\"><div><b>" +
                 lb[x.kategoriya] +
                 "</b><small>" +
-                x.sana +
+                FD(x.sana) +
+                (x._payment?.bolalar
+                  ? " · Bola: " +
+                    E(
+                      x._payment.bolalar.familiya +
+                        " " +
+                        x._payment.bolalar.ism,
+                    ) +
+                    (x._payment.sana ? " · To‘lov: " + FD(x._payment.sana) : "")
+                  : "") +
                 (x.izoh ? " · " + E(x.izoh) : "") +
                 '</small></div><b class="' +
                 (x.tur === "kirim" ? "gr" : "rd") +
