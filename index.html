@@ -212,6 +212,10 @@
       .btn.red {
         background: var(--r);
       }
+      .btn.gray {
+        background: #eef1f5;
+        color: var(--g);
+      }
       .btn:disabled {
         opacity: 0.6;
       }
@@ -249,6 +253,10 @@
         background: none;
         font: 600 15px system-ui;
         color: var(--g);
+      }
+      .tabs.s button {
+        font-size: 13px;
+        padding: 9px 2px;
       }
       .tabs .on {
         background: var(--b);
@@ -486,6 +494,9 @@
         mm = MO(),
         dd = D(),
         hm = MO();
+      let ax = "bolalar",
+        axm = "",
+        axq = "";
       const can = (p) =>
         me && (me.rol === "admin" || (me.ruxsatlar || []).includes(p));
       const toast = (m) => {
@@ -927,9 +938,8 @@
       const relist = () => {
         $("#lst").innerHTML = bList();
       };
-      function bInfo(id) {
-        const b = window._b.find((x) => x.id === id);
-        sheet(
+      function childCard(b, arch) {
+        return (
           (b._photoUrl
             ? '<img class="profile-photo" src="' +
               E(b._photoUrl) +
@@ -937,40 +947,83 @@
             : '<div class="profile-photo av" style="font-size:44px;width:130px;height:130px">' +
               E((b.ism || "?")[0]) +
               "</div>") +
-            "<h3>" +
-            E(b.familiya + " " + b.ism) +
-            "</h3><p>👪 " +
-            E(b.ota_ona_fish || "—") +
-            "</p><p>📞 " +
-            E(b.telefon || "—") +
-            "</p><p>🏠 " +
-            E(b.manzil || "—") +
-            "</p><p>🎂 Tug‘ilgan: " +
-            FD(b.tugilgan_sana) +
-            "</p><p>📅 Kelgan: " +
-            FD(b.kelgan_sana) +
-            "</p>" +
-            (b.ketgan_sana
-              ? "<p>🚪 Ketgan: " + FD(b.ketgan_sana) + "</p>"
-              : "") +
-            "<p>👥 " +
-            E(b.guruhlar?.nomi || "Guruhsiz") +
-            "</p><p>💰 " +
-            M(b.oylik_tolov) +
-            ' / oy</p><p class="mut">' +
-            E(b.izoh || "") +
-            "</p>" +
-            (can("tolovlar")
-              ? '<button class="btn" onclick="hist(\'' +
-                id +
-                "')\">To‘lov tarixi</button>"
-              : "") +
-            (can("bolalar")
+          "<h3>" +
+          E(b.familiya + " " + b.ism) +
+          "</h3><p>👪 " +
+          E(b.ota_ona_fish || "—") +
+          "</p><p>📞 " +
+          E(b.telefon || "—") +
+          "</p><p>🏠 " +
+          E(b.manzil || "—") +
+          "</p><p>🎂 Tug‘ilgan: " +
+          FD(b.tugilgan_sana) +
+          "</p><p>📅 Kelgan: " +
+          FD(b.kelgan_sana) +
+          "</p>" +
+          (b.ketgan_sana ? "<p>🚪 Ketgan: " + FD(b.ketgan_sana) + "</p>" : "") +
+          "<p>👥 " +
+          E(b.guruhlar?.nomi || "Guruhsiz") +
+          "</p><p>💰 " +
+          M(b.oylik_tolov) +
+          ' / oy</p><p class="mut">' +
+          E(b.izoh || "") +
+          "</p>" +
+          (can("tolovlar")
+            ? '<button class="btn" onclick="hist(\'' +
+              b.id +
+              "')\">To‘lov tarixi</button>"
+            : "") +
+          (arch
+            ? can("bolalar")
+              ? '<button class="btn light" onclick="axBack(\'' +
+                b.id +
+                "')\">Faol ro‘yxatga qaytarish</button>"
+              : ""
+            : can("bolalar")
               ? '<button class="btn light" onclick="bForm(\'' +
-                id +
-                "')\">Tahrirlash</button>"
-              : ""),
+                b.id +
+                '\')">Tahrirlash</button><button class="btn gray" onclick="toArx(\'' +
+                b.id +
+                "')\">🗄️ Arxivga o‘tkazish</button>"
+              : "")
         );
+      }
+      function bInfo(id) {
+        sheet(
+          childCard(
+            window._b.find((x) => x.id === id),
+            false,
+          ),
+        );
+      }
+      async function toArx(id) {
+        if (
+          !confirm(
+            "Bolani arxivga o‘tkazasizmi? Uning to‘lov va davomat ma’lumotlari saqlanib qoladi.",
+          )
+        )
+          return;
+        await q(
+          sb
+            .from("bolalar")
+            .update({ faol: false, ketgan_sana: D() })
+            .eq("id", id),
+        );
+        shut();
+        toast("Arxivga o‘tkazildi");
+        render();
+      }
+      async function axBack(id) {
+        if (!confirm("Bolani faol ro‘yxatga qaytarasizmi?")) return;
+        await q(
+          sb
+            .from("bolalar")
+            .update({ faol: true, ketgan_sana: null })
+            .eq("id", id),
+        );
+        shut();
+        toast("Bola faol ro‘yxatga qaytarildi");
+        render();
       }
       async function hist(id) {
         const r = await q(
@@ -1216,6 +1269,47 @@
           ["boshqa_xarajat", "Boshqa xarajat"],
         ],
       };
+      const LB = Object.fromEntries([...KK.kirim, ...KK.chiqim]);
+      function linkPay(r, pays) {
+        const byId = {};
+        pays.forEach((p) => (byId[p.id] = p));
+        const used = new Set(r.map((x) => x.tolov_id).filter(Boolean));
+        const free = pays.filter((p) => !used.has(p.id));
+        return r.map((x) => {
+          let p = x.tolov_id ? byId[x.tolov_id] : null;
+          if (!p && x.tur === "kirim" && x.kategoriya === "oylik_tolov") {
+            const i = free.findIndex(
+              (f) => f.sana === x.sana && Number(f.summa) === Number(x.summa),
+            );
+            if (i >= 0) p = free.splice(i, 1)[0];
+          }
+          return { ...x, _payment: p || null };
+        });
+      }
+      function kRow(x, click) {
+        const b = x._payment?.bolalar;
+        return (
+          '<div class="row"' +
+          (click ? " onclick=\"kd('" + x.id + "')\"" : "") +
+          "><div><b>" +
+          (b ? "👶 " + E(b.familiya + " " + b.ism) : LB[x.kategoriya]) +
+          "</b><small>" +
+          (b ? LB[x.kategoriya] + " · " : "") +
+          "Sana: " +
+          DT(x.sana) +
+          "</small>" +
+          (x._payment?.sana
+            ? "<small>To‘lov sanasi: " + DT(x._payment.sana) + "</small>"
+            : "") +
+          (x.izoh ? "<small>" + E(x.izoh) + "</small>" : "") +
+          '</div><b class="' +
+          (x.tur === "kirim" ? "gr" : "rd") +
+          '">' +
+          (x.tur === "kirim" ? "+" : "−") +
+          M(x.summa) +
+          "</b></div>"
+        );
+      }
       async function moliya() {
         const r = await q(
           sb
@@ -1244,25 +1338,13 @@
               )
             : [],
         ]);
-        const byId = {};
-        [...monthPays, ...linked].forEach((p) => (byId[p.id] = p));
-        const used = new Set(ids);
-        const free = monthPays.filter((p) => !used.has(p.id));
-        window._k = r.map((x) => {
-          let p = x.tolov_id ? byId[x.tolov_id] : null;
-          if (!p && x.tur === "kirim" && x.kategoriya === "oylik_tolov") {
-            const i = free.findIndex(
-              (f) => f.sana === x.sana && Number(f.summa) === Number(x.summa),
-            );
-            if (i >= 0) p = free.splice(i, 1)[0];
-          }
-          return { ...x, _payment: p || null };
-        });
+        const all = [...monthPays];
+        linked.forEach((p) => !all.find((z) => z.id === p.id) && all.push(p));
+        window._k = linkPay(r, all);
         const sm = (t) =>
             r.filter((x) => x.tur === t).reduce((a, x) => a + +x.summa, 0),
           ki = sm("kirim"),
           ch = sm("chiqim");
-        const lb = Object.fromEntries([...KK.kirim, ...KK.chiqim]);
         return (
           '<div class="bar"><input type="month" value="' +
           mm +
@@ -1274,32 +1356,8 @@
           '<div class="card wide"><span>Sof foyda</span><b>' +
           M(ki - ch) +
           '</b></div><div class="bar"><button class="btn sm" onclick="kc(\'kirim\')">+ Kirim</button><button class="btn sm red" onclick="kc(\'chiqim\')">− Chiqim</button></div>' +
-          (window._k
-            .map((x) => {
-              const b = x._payment?.bolalar;
-              return (
-                '<div class="row" onclick="kd(\'' +
-                x.id +
-                "')\"><div><b>" +
-                (b ? "👶 " + E(b.familiya + " " + b.ism) : lb[x.kategoriya]) +
-                "</b><small>" +
-                (b ? lb[x.kategoriya] + " · " : "") +
-                "Sana: " +
-                DT(x.sana) +
-                "</small>" +
-                (x._payment?.sana
-                  ? "<small>To‘lov sanasi: " + DT(x._payment.sana) + "</small>"
-                  : "") +
-                (x.izoh ? "<small>" + E(x.izoh) + "</small>" : "") +
-                '</div><b class="' +
-                (x.tur === "kirim" ? "gr" : "rd") +
-                '">' +
-                (x.tur === "kirim" ? "+" : "−") +
-                M(x.summa) +
-                "</b></div>"
-              );
-            })
-            .join("") || '<p class="mut c">Operatsiya yo‘q</p>')
+          (window._k.map((x) => kRow(x, true)).join("") ||
+            '<p class="mut c">Operatsiya yo‘q</p>')
         );
       }
       function kc(t) {
@@ -1329,6 +1387,7 @@
         if (sub === "davomat") return davomat();
         if (sub === "guruhlar") return guruhlar();
         if (sub === "hisobot") return hisobot();
+        if (sub === "arxiv") return arxiv();
         const m = (a, i, l) =>
           '<div class="row" onclick="' +
           a +
@@ -1346,8 +1405,220 @@
           (can("hisobotlar")
             ? m("sub='hisobot';render()", "📈", "Hisobotlar")
             : "") +
+          (can("bolalar") || can("tolovlar") || can("hisobotlar")
+            ? m("sub='arxiv';render()", "🗄️", "Arxiv")
+            : "") +
           m("parol()", "🔑", "Parolni almashtirish") +
           m("logout()", "🚪", "Chiqish")
+        );
+      }
+
+      /* ---------- Arxiv ---------- */
+      const AXT = [
+        ["bolalar", "Bolalar"],
+        ["tolov", "To‘lovlar"],
+        ["moliya", "Kirim-chiqim"],
+        ["davomat", "Davomat"],
+      ];
+      const HL = {
+        keldi: "Keldi",
+        kelmadi: "Kelmadi",
+        sababli: "Sababli",
+        sababsiz: "Sababsiz",
+      };
+      function axList() {
+        const k = axq.toLowerCase();
+        return (
+          window._ax
+            .filter((x) => x.s.includes(k))
+            .map((x) => x.h)
+            .join("") || '<p class="mut c">Ma’lumot yo‘q</p>'
+        );
+      }
+      function axRelist() {
+        $("#axl").innerHTML = axList();
+      }
+      function axInfo(id) {
+        sheet(
+          childCard(
+            window._ab.find((x) => x.id === id),
+            true,
+          ),
+        );
+      }
+      async function arxiv() {
+        let sum = "",
+          items = [];
+        const rng = (p, col) =>
+          axm ? p.gte(col, axm + "-01").lt(col, nxt(axm)) : p;
+        if (ax === "bolalar") {
+          const r = await q(
+            sb
+              .from("bolalar")
+              .select("*,guruhlar(nomi)")
+              .eq("faol", false)
+              .order("ketgan_sana", { ascending: false }),
+          );
+          await signedMany(r);
+          window._ab = r;
+          sum = "Arxivdagi bolalar: " + r.length + " ta";
+          items = r.map((b) => ({
+            s: (
+              b.ism +
+              " " +
+              b.familiya +
+              " " +
+              (b.telefon || "")
+            ).toLowerCase(),
+            h:
+              '<div class="row" onclick="axInfo(\'' +
+              b.id +
+              '\')"><div class="av">' +
+              avatar(b) +
+              "</div><div><b>" +
+              E(b.familiya + " " + b.ism) +
+              "</b><small>" +
+              E(b.guruhlar?.nomi || "Guruhsiz") +
+              "</small><small>Kelgan: " +
+              FD(b.kelgan_sana) +
+              " · Ketgan: " +
+              FD(b.ketgan_sana) +
+              "</small></div></div>",
+          }));
+        } else if (ax === "tolov") {
+          const r = await q(
+            rng(
+              sb
+                .from("tolovlar")
+                .select("*,bolalar(ism,familiya),oylik_hisoblar(oy)")
+                .order("sana", { ascending: false })
+                .limit(1000),
+              "sana",
+            ),
+          );
+          sum =
+            "To‘lovlar: " +
+            r.length +
+            " ta · Jami: " +
+            M(r.reduce((a, x) => a + +x.summa, 0));
+          items = r.map((x) => ({
+            s: (
+              (x.bolalar?.ism || "") +
+              " " +
+              (x.bolalar?.familiya || "")
+            ).toLowerCase(),
+            h:
+              '<div class="row"><div><b>' +
+              E(x.bolalar ? x.bolalar.familiya + " " + x.bolalar.ism : "—") +
+              "</b><small>To‘lov sanasi: " +
+              DT(x.sana) +
+              "</small><small>" +
+              (x.oylik_hisoblar?.oy || "").slice(0, 7) +
+              " oyi uchun · " +
+              E(USUL[x.usul] || x.usul) +
+              '</small></div><b class="gr">' +
+              M(x.summa) +
+              "</b></div>",
+          }));
+        } else if (ax === "moliya") {
+          const [r, pays] = await Promise.all([
+            q(
+              rng(
+                sb
+                  .from("kirim_chiqim")
+                  .select("*")
+                  .order("sana", { ascending: false })
+                  .limit(1000),
+                "sana",
+              ),
+            ),
+            q(
+              rng(
+                sb
+                  .from("tolovlar")
+                  .select("id,sana,summa,bolalar(ism,familiya)")
+                  .limit(1000),
+                "sana",
+              ),
+            ),
+          ]);
+          const L = linkPay(r, pays);
+          const sm = (t) =>
+            r.filter((x) => x.tur === t).reduce((a, x) => a + +x.summa, 0);
+          sum = "Kirim: " + M(sm("kirim")) + " · Chiqim: " + M(sm("chiqim"));
+          items = L.map((x) => ({
+            s: (
+              (x._payment?.bolalar?.ism || "") +
+              " " +
+              (x._payment?.bolalar?.familiya || "") +
+              " " +
+              (LB[x.kategoriya] || "") +
+              " " +
+              (x.izoh || "")
+            ).toLowerCase(),
+            h: kRow(x, false),
+          }));
+        } else {
+          const r = await q(
+            rng(
+              sb
+                .from("davomat")
+                .select("sana,holat,bolalar(ism,familiya)")
+                .order("sana", { ascending: false })
+                .limit(1000),
+              "sana",
+            ),
+          );
+          sum = "Davomat yozuvlari: " + r.length + " ta";
+          items = r.map((x) => ({
+            s: (
+              (x.bolalar?.ism || "") +
+              " " +
+              (x.bolalar?.familiya || "")
+            ).toLowerCase(),
+            h:
+              '<div class="row"><div><b>' +
+              E(x.bolalar ? x.bolalar.familiya + " " + x.bolalar.ism : "—") +
+              "</b><small>Sana: " +
+              DT(x.sana) +
+              '</small></div><span class="pill s_' +
+              x.holat +
+              '">' +
+              (HL[x.holat] || x.holat) +
+              "</span></div>",
+          }));
+        }
+        window._ax = items;
+        return (
+          back +
+          "<h2>🗄️ Arxiv</h2>" +
+          '<div class="tabs s">' +
+          AXT.map(
+            (x) =>
+              '<button class="' +
+              (ax === x[0] ? "on" : "") +
+              '" onclick="ax=\'' +
+              x[0] +
+              "';axq='';render()\">" +
+              x[1] +
+              "</button>",
+          ).join("") +
+          "</div>" +
+          '<div class="bar"><input placeholder="🔍 Qidirish…" value="' +
+          E(axq) +
+          '" oninput="axq=this.value;axRelist()">' +
+          (ax !== "bolalar"
+            ? '<input type="month" value="' +
+              axm +
+              '" onchange="axm=this.value;render()">'
+            : "") +
+          "</div>" +
+          '<p class="mut" style="margin-bottom:8px">' +
+          sum +
+          (ax !== "bolalar" && !axm ? " · barcha davr" : "") +
+          '</p><div id="axl">' +
+          axList() +
+          "</div>"
         );
       }
 
